@@ -1,0 +1,400 @@
+\documentclass{beamer}
+\usetheme{metropolis}
+\usecolortheme{seahorse}
+
+\usepackage{kotex, minted, csquotes}
+
+\usepackage{fontspec}
+\setsansfont{Noto Sans}
+\setsanshangulfont{Noto Sans CJK KR}
+\setmonofont{Iosevka Fixed Slab}
+
+\usepackage{unicode-math}
+\setmathfont{STIX Two Math}
+
+\newcommand\onlym[2]{\only<#1>{#2}}
+\newcommand\alertm[2]{\alert<#1>{#2}}
+
+\title{ST 모나드와 다형성}
+\subtitle{rank-n type \& impredicative type}
+\author{문순원}
+\date{}
+
+\begin{document}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\begin{frame}[fragile]
+  \frametitle{ST 모나드의 필요}
+  \begin{block}<1-> {가변자료}
+    \begin{itemize}
+      \item 많은 상황에서 효율성을 위해 가변자료형이 필요\\
+      \item 하스켈에서는 가변상태 제어에 IO 모나드를 사용
+    \end{itemize}
+  \end{block}
+
+  \begin{block}<2-> {IO 모나드의 문제점}
+    \begin{itemize}
+      \item IO 모나드는 가변자료 이상의 기능을 제공
+      \item IO 모나드의 연산결과는 IO 타입을 탈출할수 없다
+      \item IO 모나드를 강제로 탈출할경우 참조투명성이 훼손 \\
+\begin{minted}{haskell}
+unsafePerformIO :: IO a -> a
+\end{minted}
+    \end{itemize}
+  \end{block}
+\end{frame}
+
+\begin{frame}{ST 모나드의 개선점}
+  \begin{displayquote}
+    The ST monad allows for destructive updates, but is escapable (unlike IO)
+    \par\raggedleft--- \textup{\texttt{base}} 라이브러리 문서
+  \end{displayquote}
+  \pause
+  \begin{itemize}
+    \item ST 모나드는 결정론적이다
+    \item ST 모나드는 탈출할수 있으면서도 참조투명성을 해치지 않는다
+    \item \textbf{순수 함수 인터페이스를 가진 명령형 코드}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile] {어떻게 가능한가?}
+\begin{minted}{haskell}
+runST :: (forall s. ST s a) -> a
+\end{minted}
+  \pause
+  \begin{itemize}
+    \item ST 모나드를 안전하게 탈출
+    \item \textbf{rank-2 다형성}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile] {다형함수를 인자로 받기}
+\begin{minted}[escapeinside=||]{haskell}
+foo :: |\onlym{1-2}{??}\onlym{3-}{(forall a. a -> a) -> (Int, Bool)}|
+foo f = (f 1, f True)
+
+bar :: (Int, Bool)
+bar = foo |\onlym{1}{id}\onlym{2-}{(id :: forall a. a -> a)}|
+\end{minted}
+  \action<4-> {
+    \begin{itemize}
+      \item rank-2 타입
+      \item \textbf{표준 하스켈에서는 허용되지 않음}
+    \end{itemize}
+  }
+\end{frame}
+
+\begin{frame} {rank에 따른 타입의 분류}
+  \begin{displayquote}
+  The \textbf{rank} of a type describes the depth at which universal quantifiers appear contravariantly
+  \par\raggedleft---Practical type inference for arbitrary-rank types
+  \end{displayquote}
+  
+  \pause
+  \begin{block}{rank-0}
+    \begin{itemize}\alert<6>{\item\texttt{Int -> Int}}\end{itemize}
+  \end{block}
+
+  \pause
+  \begin{block}{rank-1}
+    \begin{itemize}
+      \alert<6>{\item\texttt{forall a. Int -> a -> a}}
+      \item \texttt{Int -> (forall a. a -> a)}
+    \end{itemize}
+  \end{block}
+
+  \pause
+  \begin{block}{rank-2}
+  \begin{itemize}\item\texttt{(forall a. a -> a) -> Int}\end{itemize}
+  \end{block}
+
+  \pause
+  \begin{block}{rank-3}
+    \begin{itemize}
+      \item \texttt{((forall a. a -> a) -> Int) -> Int}
+    \end{itemize}
+  \end{block}
+\end{frame}
+
+\begin{frame} {rank에 따른 타입시스템의 분류}
+  \begin{itemize}
+    \alert<2>{
+    \item rank-1 다형성 : rank가 1 이하인 타입을 허용
+    \item rank-2 다형성 : rank가 2 이하인 타입을 허용
+    }
+    \item rank-3 다형성 : rank가 3 이하인 타입을 허용
+      \\\texttt{...}
+    \item rank-k 다형성 : rank가 k 이하인 타입을 허용
+      \vfill
+    \item rank-n (higher-rank) 다형성 : 임의의 rank를 가진 타입을 허용
+  \end{itemize}
+  \pause
+  \alert<2>{타입추론이 결정가능}
+\end{frame}
+
+\begin{frame}[fragile] {GHC의 언어 확장 \texttt{RankNTypes}}
+  \begin{block} {\texttt{RankNTypes}}
+    \begin{itemize}
+      \item 하스켈에 rank-n 다형성 지원을 추가\\
+      \pause
+      \item 이제는 가능하다
+\begin{minted}{haskell}
+foo :: (forall a. a -> a) -> (Int, Bool)
+foo f = (f 1, f True)
+\end{minted}
+    \end{itemize}
+  \end{block}
+  \pause
+  \begin{block} {\texttt{Rank2Types}}
+    \begin{itemize}
+      \item 이론적으로 타입추론이 결정가능
+      \item 실제로 GHC에 결정가능한 rank-2 타입추론이 구현된적은 없음
+      \pause
+      \item \texttt{RankNTypes}의 별칭
+      \item 쓰지마세요
+    \end{itemize}
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile] {rank vs kind}
+  \begin{itemize}
+    \item rank \(\neq\) kind
+      \pause
+\begin{minted}[escapeinside=||]{text}
+Int -> Int                   :: Type |\textcolor{gray}{\textit{(rank-0)}}|
+forall a. Int -> a -> a      :: Type |\textcolor{gray}{\textit{(rank-1)}}|
+Int -> (forall a. a -> a)    :: Type |\textcolor{gray}{\textit{(rank-1)}}|
+(forall a. a -> a) -> Int    :: Type |\textcolor{gray}{\textit{(rank-2)}}|
+\end{minted}
+    \pause
+  \item rank에 상관없이 kind \texttt{\enquote*{Type}}을 가진다
+  \pause
+  \item 하스켈에서는 rank에 따른 차별이 존재
+\begin{minted}{haskell}
+[not] :: [Bool -> Bool]     -- okay
+[id]  :: [forall a. a -> a] -- not okay
+\end{minted}
+  \end{itemize}
+  \pause
+  \begin{displayquote}
+    polymorphic types are themselves not first class
+    \par\raggedleft---A Quick Look at Impredicativity
+  \end{displayquote}
+\end{frame}
+
+\begin{frame}[fragile] {Impredicativity}
+\begin{minted}{haskell}
+id :: forall p. p -> p
+mono :: [Bool] -> [Bool]
+poly :: forall a. [a] -> [a]
+\end{minted}
+  \text{\newline}
+  \begin{overprint}
+    \onslide<1>
+\begin{minted}{haskell}
+mono_a :: [Bool] -> [Bool]
+mono_a = id @([Bool] -> [Bool]) mono
+
+poly_a :: forall b. [b] -> [b]
+poly_a @b = id @([b] -> [b]) (poly @b)
+
+poly_b :: forall b. [b] -> [b]
+poly_b = id @(forall a. [a] -> [a]) poly
+\end{minted}
+    \onslide<2>
+\begin{minted}{haskell}
+mono_a :: [Bool] -> [Bool]
+mono_a = id @([Bool] -> [Bool]) mono
+
+p ~ [Bool] -> [Bool]
+\end{minted}
+    \onslide<3>
+\begin{minted}{haskell}
+poly_a :: forall b. [b] -> [b]
+poly_a @b = id @([b] -> [b]) (poly @b)
+
+p ~ [b] -> [b]
+a ~ b
+\end{minted}
+    \onslide<4-5>
+\begin{minted}[escapeinside=||]{haskell}
+poly_b :: forall b. [b] -> [b]
+poly_b = id @(forall a. [a] -> [a]) poly
+
+|\alertm{5}{p ~ forall a. [a] -> [a]}|
+\end{minted}
+    \only<5-> {
+      \begin{itemize}
+        \alert<5> {\item 타입변수를 다형타입으로 인스턴스화}
+      \end{itemize}
+    }
+    \onslide<6->
+\begin{minted}[escapeinside=||]{haskell}
+poly_b :: forall b. [b] -> [b]
+poly_b = id @(forall a. [a] -> [a]) poly
+
+p ~ forall a. [a] -> [a]
+\end{minted}
+    \begin{itemize}
+      \item 타입변수를 다형타입으로 인스턴스화
+      \item Impredicative 다형성
+      \item rank-n 다형성의 일반화\\
+        \texttt{[id] :: [forall a. a -> a]}
+      \item GHC는 `아직' impredicativity를 제대로 지원하지 않음
+    \end{itemize}
+  \end{overprint}
+\end{frame}
+
+\begin{frame}[fragile] {\texttt{ST} \& \texttt{runST}}
+\begin{minted}{haskell}
+action :: ST s a
+runST :: forall a. (forall s. ST s a) -> a
+\end{minted}
+  \vfill
+  \begin{displayquote}
+    A computation of type \texttt{ST s a} returns a value of type \texttt{a}, and execute in ``thread'' \texttt{s}.\\
+    \texttt{runST} return the value computed by a state thread. The forall ensures that the internal state used by the ST computation is inaccessible to the rest of the program.
+    \par\raggedleft--- \textup{\texttt{base}} 라이브러리 문서
+  \end{displayquote}
+  \pause
+  \begin{itemize}
+    \item ST 모나드의 연산결과를 ST 모나드에서 탈출시킴
+    \item 내부 상태가 ST 모나드를 탈출하지 못하게 함
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile] {ST 모나드의 내부 상태}
+  \begin{block}{내부 상태 \texttt{≈} 참조 타입}
+    \begin{itemize}
+      \item \texttt{STRef s a}
+      \item \texttt{MVector s a}
+      \item \texttt{HashTable s k a}
+      \pause
+      \item 스레드 \texttt{s}에 종속된 \texttt{a} 타입의 가변 상태를 가리키는 참조
+      \item \texttt{ST} 모나드 안에서 값을 읽고 쓸수 있음
+\begin{minted}{haskell}
+newSTRef :: a -> ST s (STRef s a)
+readSTRef :: STRef s a -> ST s a
+writeSTRef :: STRef s a -> a -> ST s ()
+\end{minted}
+    \end{itemize}
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile] {\texttt{runST}의 참조투명성 보장}
+  \begin{overprint}
+    \onslide<1>
+\begin{minted}{haskell}
+runST :: forall a. (forall s. ST s a) -> a
+
+escapeInt :: Int
+escapeInt = runST action where
+  action :: forall s. ST s Int
+  action = do
+    ref <- newSTRef 0
+    readSTRef ref
+\end{minted}
+    \texttt{\newline forall s. ST s a \textasciitilde \ forall s. ST s Int}\\
+    \(\therefore\) \texttt{a \textasciitilde \ Int}
+    \begin{itemize}
+      \item \texttt{Int}는 ST 모나드를 탈출할 수 있음
+    \end{itemize}
+    \onslide<2>
+\begin{minted}{haskell}
+runST :: forall a. (forall s. ST s a) -> a
+
+escapeSTRef :: STRef s Int..?
+escapeSTRef = runST action where
+  action :: forall s. ST s (STRef s Int)
+  action = do
+    ref <- newSTRef 0
+    return ref
+\end{minted}
+    \texttt{\newline forall s. ST s a \textasciitilde \ forall s. ST s (STRef s Int)}\\
+    \(\therefore\) \texttt{a \textasciitilde \ STRef s Int}\\
+    \textbf{Couldn't match type \enquote*{\texttt{a}} with \enquote*{\texttt{STRef s Bool}} because type variable \enquote*{\texttt{s}} would escape its scope}
+  \begin{itemize}
+    \item 내부상태 \texttt{STRef s Int}는 ST 모나드를 탈출할 수 없음
+  \end{itemize}
+  \end{overprint}
+\end{frame}
+
+\begin{frame}[fragile] {ST 모나드와 벡터}
+\begin{minted}[fontsize=\small]{haskell}
+freeze       :: MVector s a -> ST s (Vector a)
+unsafeFreeze :: MVector s a -> ST s (Vector a) 
+
+thaw       :: Vector a -> ST s (MVector s a)
+unsafeThaw :: Vector a -> ST s (MVector s a)
+
+runST  :: (forall s. ST s a) -> a
+create :: (forall s. ST s (MVector s a)) -> Vector a
+\end{minted}
+  \begin{itemize}
+    \item 불변벡터-가변벡터간 변환
+    \pause
+    \item 복사를 하지 않는 구현은 참조 투명성을 깨뜨림
+    \item \texttt{create}는 안전하면서도 복사가 없음
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile] {\texttt{create} 사용 예시 (병합 정렬)}
+  \text{\footnotesize \url{https://gist.github.com/damhiya/d46e7197b5186795f2fd3ae49eade029}}
+  \begin{overprint}
+    \onslide<1>
+\begin{minted}[escapeinside=||] {haskell}
+sortM :: Ord a => MVector s a -> ST s ()
+sortM u = ..
+
+sort :: Ord a => Vector a -> Vector a
+sort v =
+  if V.length v <= 1 then
+    v
+  else runST $ do
+    v' <- V.thaw v
+    sortM v'
+    V.freeze v'
+\end{minted}
+    \onslide<2>
+\begin{minted}[escapeinside=||] {haskell}
+sortM :: Ord a => MVector s a -> ST s ()
+sortM u = ..
+
+sort :: Ord a => Vector a -> Vector a
+sort v =
+  if V.length v <= 1 then
+    v
+  else runST $ do
+    v' <- V.thaw v
+    sortM v'
+    V.unsafeFreeze v'
+\end{minted}
+
+    \onslide<3>
+\begin{minted}[escapeinside=||] {haskell}
+sortM :: Ord a => MVector s a -> ST s ()
+sortM u = ..
+
+sort :: Ord a => Vector a -> Vector a
+sort v =
+  if V.length v <= 1 then
+    v
+  else V.create $ do
+    v' <- V.thaw v
+    sortM v'
+    return v'
+\end{minted}
+      \begin{itemize}
+        \item 불필요한 복사 제거
+        \item 참조 투명성이 항상 보장됨
+      \end{itemize}
+
+  \end{overprint}
+\end{frame}
+
+\begin{frame} {Q\&A}
+\end{frame}
+\end{document}

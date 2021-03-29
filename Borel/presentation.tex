@@ -1,0 +1,428 @@
+\documentclass[t]{beamer}
+\usetheme{metropolis}
+\usecolortheme{seahorse}
+
+\usepackage{kotex, minted, csquotes}
+\usepackage{fontspec}
+\setsansfont{Noto Sans}
+\setsanshangulfont{Noto Sans CJK KR}
+\setmonofont{Iosevka Fixed Slab}
+
+\usepackage{amsmath}
+\usepackage{tikz-cd}
+
+% \newcommand\onlym[2]{\only<#1>{#2}}
+% \newcommand\alertm[2]{\alert<#1>{#2}}
+\newcommand\where[0]{\ \ \text{where} \ \ }
+\newcommand\st[1]{\ \ \text{#1} \ \ }
+\newcommand\ifthen[2]{ \text{if} \ \ #1 \ \ \text{then} \ \ #2 }
+\newcommand\cthom[3]{\operatorname{hom}_{#1}(#2,#3)}
+\newcommand\ctid[1]{\operatorname{id}_{#1}}
+
+\title{귀납적 데이터 타입}
+\subtitle{카테고리에서 자연수 정의하기}
+\author{문순원}
+\date{}
+
+\begin{document}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\footnotesize
+
+\begin{frame}{Algebraic data type}
+  \begin{block} {대수적 데이터 타입(ADT)}
+    \begin{itemize}
+      \item 타입들을 조합하여 새로운 타입을 만들어냄
+      \item 정의하고자 하는 데이터 타입을 보다 정밀하게 표현할 수 있다
+      \item 귀납적으로 정의되는 타입도 있음
+    \end{itemize}
+  \end{block}
+
+  \pause
+  \begin{block}{ADT의 기본 구성요소}
+    \begin{itemize}
+      \item Product type
+      \item Sum type
+      \item Unit type
+      \item ...
+    \end{itemize}
+  \end{block}
+\end{frame}
+
+\begin{frame}[fragile]{Basic types - Product and Sum}
+  \begin{minipage}[t]{0.5\textwidth}
+    \begin{block}{Product}
+      \begin{itemize}
+        \item Cartesian product
+        \item Tuple
+        \item Record
+        \item Conjunction
+      \end{itemize}
+    \end{block}
+
+\begin{minted}{haskell}
+data Prod a b = MkProd a b
+>> MkProd 'A' 10 :: Prod Char Int
+\end{minted}
+  \(
+    \operatorname{Prod}(A,B) = A \times B
+  \)
+  \end{minipage}
+  \begin{minipage}[t]{0.45\textwidth}
+    \begin{block}{Sum}
+      \begin{itemize}
+        \item Disjoint union
+        \item Coproduct
+        \item Tagged union
+        \item Disjunction
+      \end{itemize}
+    \end{block}
+
+\begin{minted}{haskell}
+data Sum a b = MkSum0 a | MkSum1 b
+>> MkSum0 'A' :: Sum Char Int
+>> MkSum1 10 :: Sum Char Int
+\end{minted}
+  \(
+    \operatorname{Sum}(A,B) = A \sqcup B
+  \)
+  \end{minipage}
+\end{frame}
+
+\begin{frame}[fragile]{Basic types - Unit and Bottom}
+  \begin{minipage}[t]{.5\textwidth}
+  \begin{block}{Unit}
+    \begin{itemize}
+      \item 1-type
+      \item 0-tuple
+      \item Terminal object
+    \end{itemize}
+  \end{block}
+\begin{minted}{haskell}
+data Unit = MkUnit
+>> MkUnit :: Unit
+\end{minted}
+  \(
+    \operatorname{Unit} = \{ 1 \}
+  \)
+  \end{minipage}
+  \begin{minipage}[t]{.45\textwidth}
+    \begin{block}{Bottom}
+      \begin{itemize}
+        \item 0-type
+        \item Empty set
+        \item Initial object
+      \end{itemize}
+    \end{block}
+\begin{minted}{haskell}
+data Bottom
+-- Bottom 타입은 원소를 가지지 않음
+\end{minted}
+  \(
+    \operatorname{Bottom} = \emptyset
+  \)
+  \end{minipage}
+\end{frame}
+
+\begin{frame}[fragile]{Example - Bool}
+  Sum과 Unit을 사용해 Bool을 정의할 수 있다
+\begin{minted}{haskell}
+type Bool = Sum Unit Unit
+>> MkSum0 MkUnit :: Bool
+>> MkSum1 MkUnit :: Bool
+\end{minted}
+  \pause
+  ...하지만 실제론 이렇게 쓴다
+\begin{minted}{haskell}
+data Bool = True | False
+>> True :: Bool
+>> False :: Bool
+\end{minted}
+  \pause
+  ∴ 그냥 human-readable 하게 써도 알아서 잘 바꿔줌
+\end{frame}
+
+% \begin{frame}[fragile]{Function type}
+%   \begin{block}{Function}
+%     \begin{itemize}
+%       \item Imply
+%     \end{itemize}
+%   \end{block}
+% 
+% \begin{minted}{haskell}
+% data (->) a b = -- 함수는 생성자를 통해 정의할 수 없다
+% \end{minted}
+%   \(
+%     \text{Func}(A,B) = \{ f \ | \ f : A \to B \}
+%   \)
+%   \pause
+%   \vspace{0.5cm}
+%   \\함수타입의 값은 람다식으로 표현됨
+% \begin{minted}{haskell}
+% f : a -> a
+% f = λ x -> x
+% \end{minted}
+%   \pause
+%   함수가 무엇인지를 정의하기는 너무 어렵다...
+%   \begin{itemize}
+%     \item Computability (total function)
+%     \item Intensional equality vs Extensional equality
+%   \end{itemize}
+% \end{frame}
+
+\begin{frame}[fragile]{Inductive data types}
+  Product, Sum 타입만으로는 다룰 수 있는 대상이 너무 제한적임\newline \\
+  \pause
+  재귀를 하면 임의의 크기를 가진 데이터도 표현 가능
+\begin{minted}{haskell}
+data List a = Nil | Cons a (List a)
+>> Nil :: List Int
+>> Cons 0 Nil :: List Int
+>> Cons 1 (Cons 0 Nil) :: List Int
+>> Cons 2 (Cons 1 (Cons 0 Nil)) :: List Int
+>> ...
+\end{minted}
+\end{frame}
+
+\begin{frame}[fragile]{Inductive data types...}
+\begin{minted}{haskell}
+data Nat = Zero | Succ Nat
+>> Zero                  -- 0
+>> Suc Zero              -- 1
+>> Suc (Suc Zero)        -- 2
+>> Suc (Suc (Suc Zero))  -- 3
+>> ...
+
+data Tree a = Nil | Branch a (Tree a) (Tree a)
+>> Branch 1 (Branch 0 Nil Nil) (Branch 2 Nil Nil)
+--      1
+--    /   \
+--   0     2
+--  / \   / \
+-- N   N N   N
+\end{minted}
+\end{frame}
+
+\begin{frame}[fragile]{Haskell's Functor}
+  Maybe 타입은 다음과 같이 정의된다
+\begin{minted}{haskell}
+-- type Maybe a = Sum Unit a
+data Maybe a = Nothing | Just a
+>> Nothing :: Maybe Int
+>> Just 10 :: Maybe Int
+\end{minted}
+  \pause
+  \texttt{Maybe}처럼 타입변수를 인자로 받을 수 있는 타입이 특수한 조건을 만족하면 \textbf{Functor}라고 부른다\\
+  Product와 Sum만으로 이루어진 타입은 반드시 이 조건을 만족
+\begin{minted}{haskell}
+class Functor f where
+  fmap :: (a -> b) -> f a -> f b
+
+instance Functor Maybe where
+  fmap f Nothing = Nothing
+  fmap f (Just x) = Just (f x)
+\end{minted}
+  \texttt{fmap}은 리스트에서 흔히 사용하는 \texttt{map}함수와 비슷한 기능을 함
+
+\end{frame}
+
+\begin{frame}[fragile]{Inductive types as a fixpoint of functor}
+  Inductive type은 functor의 fixpoint로 다룰 수 있다\\
+  \pause
+  \[ X = \operatorname{Fix}(F) \Leftrightarrow X \approx F(X) \]
+  \pause
+\begin{minted}{haskell}
+data Fix f = InF (f (Fix f))
+
+data ListF a b = ConsF a b | NilF
+type List a = Fix (ListF a)
+
+data Maybe a = Just a | Nothing
+type Nat = Fix Maybe
+
+data TreeF a b = BranchF a b b | NilF
+type Tree a = Fix (TreeF a)
+\end{minted}
+  \pause
+  Functor가 주어졌을 때 fixpoint를 어떻게 찾을수 있을까?
+\end{frame}
+
+% \begin{frame}{Computational trinitarianism}
+%   Curry-Howard-Lambek correspondence
+%   \begin{center}
+%   logic = type theory = category theory
+%   \end{center}
+%   \begin{itemize}
+%     \item propositions as types
+%     \item programs as proofs
+%     \item type theory - category theory
+%   \end{itemize}
+%   \pause
+%   몇가지 예시를 알아보자면...
+%   \begin{itemize}
+%     \item true - unit type - terminal object
+%     \item false - bottom type - initial object
+%     \item conjunction - product type - product
+%     \item disjunction - sum type - coproduct
+%     \item implication - function type - internal hom
+%     \item universal quantifier - pi type - dependent product
+%   \end{itemize}
+% \end{frame}
+
+\begin{frame}[c]
+  \begin{center}
+    \huge 지금부터 카테고리 이야기함 아 ㅋㅋ
+  \end{center}
+\end{frame}
+
+\begin{frame}{Category}
+  카테고리 \(C\)란
+  \begin{itemize}
+    \item collection of object : \(\operatorname{ob}(C)\)
+    \item collection of morphism : \( \cthom{C}{X}{Y} \where X, Y \in \operatorname{ob}(C) \)
+    \item composition : \( \circ : \cthom{C}{Y}{Z} \times \cthom{C}{X}{Y} \to \cthom{C}{X}{Z} \)
+  \end{itemize}
+  \pause
+  또한 카테고리법칙을 만족해야 한다
+  \begin{itemize}
+    \item identity morphism의 존재 : \( \ctid{X} : X \to X \where X \in C \)
+      \[ \ctid{Y} \circ f = f \circ \ctid{X} = f \where f : X \to Y \]
+    \item \(\circ\)의 associativity :
+      \[ (f \circ g) \circ h = f \circ (g \circ h) = f \circ g \circ h \]
+  \end{itemize}
+  \pause
+  identity morphism은 항상 유일하다
+  \[ \ctid{1} = \ctid{1} \circ \ctid{2} = \ctid{2} \]
+\end{frame}
+
+\begin{frame}[fragile]{Functor}
+  펑터 \(F : C \to D\)는
+  \begin{itemize}
+    \item object간 매핑 : \(F(X) \in D \where X \in C \)
+    \item morphism간 매핑 : \(F(f) : F(X) \to F(Y) \where X, Y \in C \st{and} f : X \to Y \)
+  \end{itemize}
+  \pause
+  펑터가 만족해야 하는 법칙은
+  \begin{itemize}
+    \item identity morphism의 보존 : \( F(\ctid{X}) = \ctid{F(X)} \)
+    \item morphism 합성의 보존 : \( F(g \circ f) = F(g) \circ F(f) \)
+  \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Endofunctor}
+  자기 자신으로 가는 함자 \(F : C \to C\)를 endofunctor라고 한다\newline \\
+  \pause
+  하스켈의 functor는 모두 endofunctor이다 \newline\\
+  \begin{minipage}[t]{.6\textwidth}
+\begin{minted}{haskell}
+-- Maybe : Type -> Type
+data Maybe a = Just a | Nothing
+\end{minted}
+  \end{minipage}
+  \begin{minipage}[t]{.35\textwidth}
+    \( \operatorname{Maybe} : C \to C \)\\
+    \( \operatorname{Maybe}(X) = X \coprod \ast \)
+  \end{minipage}
+  \vspace{0.5cm}
+  \pause
+  \\functor의 fixpoint는 당연히 endofunctor에서만 논할 수 있다
+\end{frame}
+
+\begin{frame}{Initial object}
+  initial object \( \bot \in C \)는
+  \begin{itemize}
+    \item unique morphism \(u : \bot \to x \) for any \(x \in C\)
+  \end{itemize}
+  로 정의되는데...\\
+  \pause
+  initial object가 존재한다면,``unique up to unique isomorphism''이다\newline \\
+  initial object \(\bot_1, \bot_2\)가 존재한다면\\
+  \( u_1 : \bot_1 \to \bot_2, u_2 : \bot_2 \to \bot_1, u_3 : \bot_1 \to \bot_1 \)이 각각 유일하고\\
+  identity morphism의 존재성에 의해 \( u_3 \) 는 identity morphism이다
+  그런데 \( u_2 \circ u_1 : \bot_1 \to \bot_1 \) 이므로 \( u_2 \circ u_1 = u_3 \)\\
+  합성순서가 반대여도 마찬가지의 이유로 identity morphism이 됨\\
+  즉, \( u_1, u_2 \) 는 유일한 isomorphism쌍이 된다.\newline\\
+  \pause
+  initial object는 타입이론의 bottom type과 대응된다
+\end{frame}
+
+\begin{frame}[fragile]{F-algebra}
+  Endofunctor \(F : C \to C\)에 대한 F-algebra는 \((X, \alpha)\) 이다
+  \begin{itemize}
+    \item carrier : \( X \in C\)
+    \item a morphism : \( \alpha : F(X) \to X \)
+  \end{itemize}
+
+  \pause
+  여기서 각각의 F-algebra들을 object로 가지는 카테고리를 생각할 수 있는데\\
+  F-algebra \((X, \alpha)\)와 \((Y, \beta)\) 간의 morphism \(m\) 은
+  \( m \circ \alpha = \beta \circ F(m) \) 를 만족하는 \( m : X \to Y \)로 정의된다
+
+  \[
+    \begin{tikzcd}
+      F(X) \arrow{r}{F(m)} \arrow[swap]{d}{\alpha} & F(Y) \arrow{d}{\beta} \\%
+      X \arrow{r}{m} & Y
+    \end{tikzcd}
+  \]
+\end{frame}
+
+\begin{frame}[fragile]{Initial algebra and Lambek's theorem}
+  Initial algebra란 F-algebra들의 카테고리에서의 initial object를 말한다\newline\\
+  \pause
+  그런데 Lambek's theorem에 따르면..\\
+  \scriptsize
+  \textbf{Theorem.} Endofunctor \(F\)가 initial algebra \((X, \alpha : F(X) \to X)\) 를 가진다면 \(\alpha\)는 \(X\)와 \(F(X)\)간의 isomorphism이다\\
+  \pause
+  \textbf{Proof.} \((X, \alpha)\)가 F-algebra라면 \((F(X), F(\alpha))\)또한 F-algebra이다.
+    \((X, \alpha)\)가 initial object이므로 F-algebra에서의 morphism \(i : (X,\alpha) \to (F(X), F(\alpha)) \)가 존재하며 \(i \circ \alpha = F(\alpha) \circ F(i) \)가 성립한다.
+    한편 \( \alpha \circ F(\alpha) = \alpha \circ F(\alpha) \)는 자명하므로 \(\alpha\)는 F-algebra에서의 morphism이다.
+    즉 \( \alpha : (F(X),F(\alpha)) \to (X,\alpha)\)
+
+  \begin{minipage}{.5\textwidth}
+    \[
+      \begin{tikzcd}
+        F(X) \arrow{r}{F(i)} \arrow[swap]{d}{\alpha} & F(F(X)) \arrow{d}{F(\alpha)} \\%
+        X \arrow{r}{i} & F(X)
+      \end{tikzcd}
+    \]
+  \end{minipage}
+  \begin{minipage}{.45\textwidth}
+    \[
+      \begin{tikzcd}
+        F(X) \arrow[swap]{d}{\alpha} & F(F(X)) \arrow[swap]{l}{F(\alpha)} \arrow{d}{F(\alpha)} \\%
+        X & F(X) \arrow{l}{\alpha}
+      \end{tikzcd}
+    \]
+  \end{minipage}
+  \vspace{.5cm}
+  \\따라서 F-algebra의 카테고리에서의 합성 \(\alpha \circ i : (X,\alpha) \to (X,\alpha)\) 을 생각할 수 있다.
+  그런데 \(X\)는 initial object이므로 \(\alpha \circ i = \operatorname{id}_{(X,\alpha)} \)이고,
+  identity morphism은 유일하므로 \(\alpha \circ i = \operatorname{id}_X \)이다.
+  그러면 펑터 \(F\)에 대한 법칙에 의해\( F(\alpha) \circ F(i) = \operatorname{id}_{F(X)} \) 이다.
+  그러면 왼쪽의 commutative diagram에 의해 \( i \circ \alpha = F(\alpha) \circ F(i) = \operatorname{id}_{F(X)}  \) 이므로 \(\alpha\) 는 isomorphism이다.
+
+\end{frame}
+
+\begin{frame}{Lambek's theorem의 의미}
+  Endofunctor \(F\)의 initial algebra \(X\)가 존재한다면, \(X\)는 \(F\)의 fixed point이다.\\
+  즉 inductive data type은 initial algebra이다.\\
+  \pause
+  \begin{center}
+    자연수는 Maybe functor의 initial algebra이다!
+  \end{center}
+\end{frame}
+
+\begin{frame}{생략된 이야기}
+  \begin{itemize}
+    \item catamorphism
+    \item function type
+    \item Curry-Howard-Lambek correspondence
+    \item product/coproduct in CT
+    \item initial algebra가 아닌 recursive data type
+  \end{itemize}
+\end{frame}
+
+\end{document}
