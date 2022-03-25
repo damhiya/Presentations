@@ -1,0 +1,189 @@
+\documentclass{beamer}
+\usetheme{metropolis}
+\usecolortheme{seahorse}
+
+\usepackage{kotex, csquotes}
+
+\usepackage{fontspec}
+% \setsansfont{Noto Sans}
+% \setsanshangulfont{Noto Sans CJK KR}
+% \setmonofont{Iosevka Fixed Slab}
+% 
+\usepackage{unicode-math}
+\setmathfont{STIX Two Math}
+
+\title{DFA minimization}
+\subtitle{Hopcroft's algorithm}
+\author{문순원}
+\date{}
+
+\begin{document}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\begin{frame}{Lexer generator's work}
+  \begin{block}{From regex to DFA}
+    \begin{itemize}
+      \item convert regex into \(\varepsilon\)-NFA (Thompson's construction)
+      \item convert \(\varepsilon\)-NFA into NFA (Dealing with \(\varepsilon\)-closure)
+      \item convert NFA into DFA (Powerset construction)
+      \alert<2> {\item minimize DFA (Hopcroft's algorithm)}
+    \end{itemize}
+  \end{block}
+\end{frame}
+
+\begin{frame}{Definition of minimal DFA and some facts about it}
+  \small
+  DFA \(M\) is said to be \textit{minimal} if no DFA with fewer states recognizes \(L(M)\). \\[1em]
+  The minimial DFA for any recognizable language is unique up to isomorphism. \\[1em]
+  Given an arbitrary DFA \(M\), one can effectively construct the minimal DFA equivalent to \(M\).
+\end{frame}
+
+\begin{frame}[t]{State equivalence and reduced DFA}
+  Let DFA \(M = (Q, \Sigma, \delta, q_0, F)\) \\[1em]
+
+  Two states \(a\) and \(b\) are \textit{equivalent} if \( (a,b) \in \rho_M \) where
+  \[ \rho_M = \{ (a,b) \mid (\forall w \in \Sigma^*) \ (\delta_w(a) \in F \Leftrightarrow \delta_w(b) \in F) \} \]
+
+  \pause
+  DFA \(M\) is \textit{reduced} if equivalence implies identity. i.e.
+  \[ (a,b) \in \rho_M \Rightarrow a = b \]
+
+  \pause
+  { \color{blue}
+    Reduced DFA is minimal! \\
+    How can we construct reduced DFA?
+  }
+\end{frame}
+
+\begin{frame}[t]{Congruence and quotient of DFA}
+  \only<1-2> {
+    An equivalence relation \(\rho \subseteq Q \times Q\) is a \textit{congruence} of \(M\) if
+    \begin{itemize}
+      \item \(\delta_x\) is compatible with \(\rho\) \\
+            \( (a,b) \in \rho \Rightarrow (\delta_x(a), \delta_x(b)) \in \rho \)
+      \item \(F\) is a union of some \(\rho\)-classes (\(\rho\) saturates \(F\)) \\
+            \( [a]_\rho \in F/\rho \Rightarrow [a]_\rho \subseteq F \)
+    \end{itemize}
+  }
+  \only<2> {
+    The \textit{quotient DFA} \(M/\rho\) by a congruence \(\rho\) is defined as follows
+    \[
+      \begin{array}{c}
+        M/\rho = (Q/\rho, \Sigma, \delta/\rho, [q_0]_{\rho}, F/\rho) \\
+        \textit{where} \quad (\delta/\rho)_x([a]_{\rho}) = [\delta_x(a)]_{\rho}
+      \end{array}
+    \]
+    
+    Quotient preserves recognizable language. i.e. \( L(M) = L(M/\rho) \)
+  }
+
+  \only<3-4> {
+    An equivalence relation \(\rho\) is coarser than \(\pi\) if
+    \[ (a,b) \in \pi \Rightarrow (a,b) \in \rho \]
+  }
+  \only<4> {
+    \\ Following two statements are true
+    \begin{itemize}
+      \item \(\rho_M\) is the coarsest congruence
+      \item \(M/\rho_M\) is reduced. Hence it's minimal
+    \end{itemize}
+  }
+\end{frame}
+
+\begin{frame}{The classical minimization algorithm}
+  We can find \(\rho_M\) by following iterative algorithm \\[1em]
+
+  Let \(\rho_i\) be a sequence of equivalence relation on \(Q\) such that
+  \[
+    \begin{array}{ll}
+      \rho_0 &= \{ (a,b) \mid a, b \in F \} \cup \{ (a,b) \mid a, b \in Q \setminus F \} \\
+      \rho_{i+1} &= \{ (a,b) \in \rho_i \mid (\forall x \in \Sigma) \ (\delta_x(a), \delta_x(b)) \in \rho_i \}
+    \end{array}
+  \]
+  
+  \pause
+  Then there exists \(k \in \mathbb{N} \) s.t. \(\rho_{k+1} = \rho_k\) and \\
+  \(\rho_k\) is the coarsest congruence of \(M\). (i.e. \(\rho_M = \rho_k\))
+\end{frame}
+
+\begin{frame}{Hopcroft's algorithm}
+  \footnotesize
+  \[
+    \begin{array}{l}
+      Q/\rho \leftarrow \{ F, Q \setminus F \} \\
+      L \leftarrow \{ F \} \\
+      \text{while there exists} \ A \in L \ \text{do} \\
+      \qquad L \leftarrow L \setminus \{A\} \\
+      \qquad \text{for each} \ x \in \Sigma \ \text{do} \\
+      \qquad \qquad \text{let} \ X = \delta_x^{-1}(A) \\
+      \qquad \qquad \text{for each} \ Y \in Q/\rho \ \text{s.t.} \
+          (Y' = Y \cap X \neq \emptyset) \wedge (Y'' = Y \setminus X \neq \emptyset) \ \text{do} \\
+      \qquad \qquad \qquad Q/\rho \leftarrow (Q/\rho \setminus \{Y\}) \cup \{Y', Y''\} \\
+      \qquad \qquad \qquad \text{if} \ Y \in L \ \text{then} \\
+      \qquad \qquad \qquad \qquad L \leftarrow (L \setminus \{Y\}) \cup \{Y', Y''\} \\
+      \qquad \qquad \qquad \text{else} \\
+      \qquad \qquad \qquad \qquad L \leftarrow L \cup \{ \text{min}(Y', Y'') \} \\
+      \qquad \qquad \text{end} \\
+      \qquad \text{end} \\
+      \text{end}
+    \end{array}
+  \]
+  \pause
+  \color{blue} \(L \subseteq Q/\rho\) is a loop invariant!
+\end{frame}
+
+\begin{frame}{Modified version}
+  \footnotesize
+  {\color{blue} Let \( R = Q/\rho \setminus L \)}
+  \[
+    \begin{array}{l}
+      R \leftarrow \{ Q \setminus F \} \\
+      L \leftarrow \{ F \} \\
+      \text{while there exists} \ A \in L \ \text{do} \\
+      \qquad L \leftarrow L \setminus \{A\} \\
+      \qquad R \leftarrow R \cup \{A\} \\
+      \qquad \text{for each} \ x \in \Sigma \ \text{do} \\
+      \qquad \qquad \text{let} \ X = \delta_x^{-1}(A) \\
+      \qquad \qquad \text{for each} \ Y \in R \ \text{s.t.} \
+          (Y' = Y \cap X \neq \emptyset) \wedge (Y'' = Y \setminus X \neq \emptyset) \ \text{do} \\
+      \qquad \qquad \qquad R \leftarrow (R \setminus \{Y\}) \cup \{\text{max}(Y', Y'')\} \\
+      \qquad \qquad \qquad L \leftarrow L \cup \{\text{min}(Y', Y'')\} \\
+      \qquad \qquad \text{end} \\
+      \qquad \qquad \text{for each} \ Y \in L \ \text{s.t.} \
+          (Y' = Y \cap X \neq \emptyset) \wedge (Y'' = Y \setminus X \neq \emptyset) \ \text{do} \\
+      \qquad \qquad \qquad L \leftarrow (L \setminus \{Y\}) \cup \{Y', Y''\} \\
+      \qquad \qquad \text{end} \\
+      \qquad \text{end} \\
+      \text{end}
+    \end{array}
+  \]
+\end{frame}
+
+\begin{frame}{Contribution to open source project}
+  \begin{block}{Alex: A lexical analyser generator for Haskell}
+    \begin{itemize}
+      \item
+        Found some inefficiency in the alex's implementation of Hopcroft's algorithm
+        \pause
+      \item
+        I improved it in various ways
+        \begin{enumerate}
+          \item Use better data structure and functions
+          \alert<3>{\item Exclude trivial cases}
+          \item The idea described before in this presentation
+        \end{enumerate}
+        \url{https://github.com/haskell/alex/pull/176} \\
+        \pause
+        \alert<3>{Most performance gain was came from 2.}
+    \end{itemize}
+  \end{block}
+\end{frame}
+
+\begin{frame}{References}
+  Re-describing an algorithm by Hopcroft(Timo Knuutila, 2001)
+\end{frame}
+
+\end{document}
