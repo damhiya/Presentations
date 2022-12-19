@@ -1,6 +1,39 @@
-\documentclass{beamer}
+\documentclass[10pt]{beamer}
+\usefonttheme[onlymath]{serif}
 
-\usepackage{kotex}
+\usepackage{kotex, csquotes, qtree, stmaryrd, tikz-cd, proof}
+
+% Mathematical notations
+\newcommand{\pow}[0]{\mathcal{P}}
+\newcommand{\chr}[1]{\textrm{`\(#1\)'}}
+
+% Imp lang
+\newcommand{\Id}[0]{\mathrm{Id}}
+\newcommand{\AExp}[0]{\mathrm{AExp}}
+\newcommand{\BExp}[0]{\mathrm{BExp}}
+\newcommand{\Stmt}[0]{\mathrm{Stmt}}
+\newcommand{\true}[0]{\texttt{true}}
+\newcommand{\false}[0]{\texttt{false}}
+\newcommand{\asn}[0]{\leftarrow}
+\newcommand{\skp}[0]{\texttt{skip}}
+\newcommand{\ifte}[3]{\texttt{if} \ #1 \ \texttt{then} \ #2 \ \texttt{else} \ #3}
+\newcommand{\while}[2]{\texttt{while} \ #1 \ \texttt{do} \ #2 }
+\newcommand{\putn}[1]{\texttt{put} \ #1}
+\newcommand{\getn}[0]{\texttt{get}}
+
+% Eval
+\newcommand{\Mem}[0]{\mathrm{Mem}}
+\newcommand{\True}[0]{\mathrm{T}}
+\newcommand{\False}[0]{\mathrm{F}}
+\newcommand{\eval}[0]{\mathrm{eval}}
+
+% Semantics
+\newcommand{\bigstep}[3]{#1 \vdash #2 \Downarrow #3}
+\newcommand{\Trace}[0]{\mathrm{Trace}}
+\newcommand{\beh}[0]{\mathrm{beh}}
+
+% Hoare logic
+\newcommand{\hoare}[3]{\{#1\} #2 \{#3\}}
 
 \title{PL and Logic}
 \author{문순원}
@@ -11,5 +44,326 @@
   \titlepage
 \end{frame}
 
+\begin{frame}{소프트웨어 안정성을 높이는 방법}
+  \begin{block}{테스팅}
+    \begin{itemize}
+      \item 몇 가지 케이스에서 프로그램의 실행 결과를 기대되는 결과와 비교
+      \item 테스트를 통과했더라도 버그가 없음을 확신할 수는 없음
+    \end{itemize}
+  \end{block}
+
+ \pause
+ \begin{block}{프로그램 분석}
+   \begin{itemize}
+     \item 프로그램을 자동으로 분석하는 프로그램
+     \item 정지문제에 따른 한계
+   \end{itemize}
+ \end{block}
+
+ \pause
+  \begin{block}{모델 체킹}
+    \begin{itemize}
+      \item 상태 전이 기계의 특정 성질을 자동으로 검증
+      \item State explosion problem을 피하기 쉽지 않음
+    \end{itemize}
+  \end{block}
+
+ \pause
+  \begin{block}{정형 검증}
+    \begin{itemize}
+      \item 사람이 직접 프로그램의 성질을 증명
+      \item 굉장히 높은 비용
+    \end{itemize}
+  \end{block}
+\end{frame}
+
+\begin{frame}{정형 검증}
+  정형 검증 (Formal verification)
+  \begin{displayquote}
+  the act of proving or disproving the correctness of intended algorithms underlying a system with respect to a certain formal specification or property, using formal methods of mathematics
+  --- from Wikipedia
+  \end{displayquote}
+  \pause
+  \begin{itemize}
+    \item 프로그램과 그 스펙을 수학적 대상으로 다룸
+    \item 연역적 방법을 사용해 프로그램의 성질을 증명
+    \item 증명의 무결성을 컴퓨터로 검사할 수 있음
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{프로그램 정의의 계층}
+  \begin{itemize}
+    \item 기호들의 나열 (concrete syntax) \qquad \quad \
+      \( \left[ \chr{2}, \chr{+}, \chr{3}, \chr{\times}, \chr{4} \right] \)
+    \item<2-> 추상 구문 트리 (abtract syntax)
+      \Tree [.\(+\) \(2\) [.\(\times\) \(3\) \(4\) ] ] \\
+    \item<3-> 의미 (semantics) \\
+      프로그래밍 언어의 패러다임, 의미의 용도에 따라 여러가지 접근이 있다.
+      \onslide<4->
+      \begin{itemize}
+        \item Operational semantics
+          \begin{itemize}
+            \item Big-step semantics
+            \item Small-step semantics
+          \end{itemize}
+        \item Denotational semantics
+        \item Axiomatic semantics
+      \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}{Imp}
+  \only<1-2> {
+    간단한 프로그래밍 언어 Imp를 통해 추상 문법과 의미를 정의하는 방법을 알아보자.
+
+    \onslide<2->
+    \[
+      \begin{array}{llrl}
+        \Id   & x, y, z & & \\
+        \AExp & E & ::= & n
+                     \mid x
+                     \mid E_1 + E_2
+                     \mid - E
+                     \mid E_1 \times E_2
+                     \mid \ldots
+                     \\
+        \BExp & B & ::= & \true
+                     \mid \false
+                     \mid \neg B
+                     \mid B_1 \wedge B_2
+                     \mid B_1 \vee B_2
+                     \mid \\
+                    & & & E_1 = E_2
+                     \mid E_1 \leq E_2
+                     \mid \ldots
+                     \\
+        \Stmt & S & ::= & \skp
+                     \mid x \asn E
+                     \mid S_1 ; S_2
+                     \mid \ifte{B}{S_1}{S_2}
+                     \mid \while{B}{S}
+      \end{array}
+    \]
+    \begin{itemize}
+      \item 정수와 논리 연산이 가능한 명령형 언어
+      \item 변수는 정수만을 담을 수 있다
+      \item 제어 구문은 if, while 뿐
+      \item \(\AExp\), \(\BExp\), \(\Stmt\)는 귀납적으로 정의된 추상 문법 트리들의 집합
+    \end{itemize}
+  }
+
+  \only<3-4> {
+    10이하 자연수들의 합을 구하는 프로그램
+    \[ x \asn 10 ; y \asn 0 ; \while{0 \leq x}{ \{ y \asn y + x ; x \asn x - 1 \} } \]
+
+    \onslide<4->
+    \Tree [.\(;\) [.\(\asn\) \(x\) \(10\) ]
+                  [.\(;\) [.\(\asn\) \(y\) \(0\) ]
+                          [.\(\while{..}{..}\) [.\(\leq\) \(0\) \(x\) ]
+                                               [.\(;\) [.\(\asn\) \(y\)
+                                                                        [.\(+\) \(y\) \(x\) ] ]
+                                                       [.\(\asn\) \(x\)
+                                                                        [.\(-\) \(x\) \(1\) ] ] ] ] ] ]
+  }
+\end{frame}
+
+\begin{frame}{메모리 상태}
+  \only<1> {
+    명령형 프로그래밍 언어는 변수의 상태를 바꿈으로서 계산을 수행하기 때문에,
+    이러한 언어의 의미를 다루기 위해서는 먼저 메모리를 정의할 필요가 있다.
+    Imp의 메모리 상태는 다음처럼 정의할 수 있다.
+    \[ M \in \Mem = \mathbb{Z}^{\Id} \]
+  }
+
+  \only<2> {
+    메모리의 상태가 정해져있다면 \(\AExp\)와 \(\BExp\)의 값을 구할 수 있다.
+    \[
+      \begin{array}{l}
+        \eval : \Mem \times \AExp \to \mathbb{Z} \\
+        \eval : \Mem \times \BExp \to \mathbb{B} \\
+      \end{array}
+    \]
+    \[
+      \begin{array}{rcl}
+        \eval(M,n) &=& n \\
+        \eval(M,x) &=& M(x) \\
+        \eval(M,E_1 + E_2) &=& \eval(M,E_1) + \eval(M,E_2) \\
+        & ... & \\
+        \eval(M,\true) &=& \True \\
+        \eval(M,\false) &=& \False \\
+        \eval(M,B_1 \wedge B_2) &=& \eval(M,B_1) \wedge \eval(M,B_2) \\
+        \eval(M,E_1 = E_2) &=&
+        \begin{cases}
+          \True, & \text{if}\ \eval(M,E_1) = \eval(M,E_2) \\
+          \False, & \text{otherwise}
+        \end{cases}
+        \\
+        & ... &
+      \end{array}
+    \]
+  }
+\end{frame}
+
+\begin{frame}{Imp의 의미 - Big-step semantics}
+  \only<1-3> {
+    명령형 언어의 의미를 메모리의 상태를 바꾸는 함수로 이해할 수 있지 않을까?
+    \[ \Stmt \times \Mem \to \Mem \]
+
+    \onslide<2->
+    \begin{itemize}
+      \item 프로그램이 종료하지 않는다면?
+      \item 프로그램이 비결정적이라면?
+    \end{itemize}
+
+    \onslide<3->
+    명령형 언어의 의미를 메모리의 상태를 바꾸는 `관계'로 정의하자.
+    \[ \Stmt \to \pow(\Mem \times \Mem) \]
+    \[ \bigstep{M_1}{S}{M_2} \]
+    ``상태 \(M_1\)에서 프로그램 \(S\)가 실행되었을 때 상태 \(M_2\)로 종료할 수 있다''
+  }
+
+  \only<4> {
+    \small
+
+    \infer{\bigstep{M}{\skp}{M}}{
+    }\vspace{1em}
+
+    \infer{\bigstep{M}{x \asn E}{M [x \mapsto v]}}{
+      \eval(M,E) = v
+    }\vspace{1em}
+
+    \infer{\bigstep{M_1}{S_1;S_2}{M_3}}{
+      \bigstep{M_1}{S_1}{M_2} &
+      \bigstep{M_2}{S_2}{M_3}
+    }\vspace{1em}
+
+    \infer{\bigstep{M_1}{\ifte{B}{S_1}{S_2}}{M_2}}{
+      \eval(M_1,B) = \True &
+      \bigstep{M_1}{S_1}{M_2}
+    }\vspace{1em}
+
+    \infer{\bigstep{M_1}{\ifte{B}{S_1}{S_2}}{M_2}}{
+      \eval(M,B) = \False &
+      \bigstep{M_1}{S_2}{M_2}
+    }\vspace{1em}
+
+    \infer{\bigstep{M_1}{\while{B}{S}}{M_3}}{
+      \eval(M,B) = \True &
+      \bigstep{M_1}{S}{M_2} &
+      \bigstep{M_2}{\while{B}{S}}{M_3}
+    }\vspace{1em}
+
+    \infer{\bigstep{M}{\while{B}{S}}{M}}{
+      \eval(M,B) = \False
+    }
+  }
+
+  \only<5> {
+    상태 \(M_1\)에서 프로그램 \(S\)가 무한루프를 도는 경우에는
+    \[ \{ M_2 \mid \bigstep{M_1}{S}{M_2} \} = \emptyset \]
+    현실에는 서버와 같이 무한루프를 도는 유용한 프로그램도 존재한다.
+  }
+\end{frame}
+
+\begin{frame}{Imp의 의미 - Small-step semantics}
+  \only<1-2> {
+    \begin{block}{전이 시스템 (transition system)}
+      상태들의 집합 \(S\), 전이 관계 \(\to \ \subseteq S \times S\). \\
+      \( (p,q) \in \ \to \)는 \( p \to q \)와 같이 표기한다. \newline
+
+      \onslide<2->
+      Imp의 의미를 \(S = (\Stmt \uplus \{\cdot\}) \times \Mem\)을 상태로 가지는 전이 시스템으로 정의할 수 있다.
+      \[ \pow(S \times S) \]
+
+      \(\Stmt \uplus \{\cdot\}\)는 프로그램 카운터와 비슷한 역할
+    \end{block}
+  }
+
+  \only<3-4> {
+    \[ S = x \asn 1; y \asn 2; z \asn x + y \]
+
+    \onslide<4->
+    \(\{ \ast \mapsto 0\}\)에서 \(S\)를 실행시키는 경우
+    \[
+      \begin{tikzcd}
+        (x \asn 1; y \asn 2; z \asn x + y, \{\ast \mapsto 0\}) \\
+        (y \asn 2; z \asn x + y, \{x \mapsto 1, \ast \mapsto 0\}) \\
+        (z \asn x + y, \{y \mapsto 2, x \mapsto 1, \ast \mapsto 0\}) \\
+        (\cdot, \{z \mapsto 3, y \mapsto 2, x \mapsto 1, \ast \mapsto 0\}) \\
+	\arrow[from=1-1, to=2-1]
+	\arrow[from=2-1, to=3-1]
+	\arrow[from=3-1, to=4-1]
+      \end{tikzcd}
+    \]
+  }
+
+  \only<5-6> {
+    현실의 프로그램들은 외부 세계와 상호작용(키보드 입력, 화면 출력, 디스크 작업, ...)을 하는데, 이것을 어떻게 표현할 수 있을까? \newline
+
+    \onslide<6->
+    Imp를 문법을 다음과 같이 확장시켜보자.
+    \[
+      \begin{array}{llrl}
+        \Stmt & S & ::= & \skp
+                     \mid x \asn E
+                     \mid S_1 ; S_2
+                     \mid \ifte{B}{S_1}{S_2}
+                     \mid \while{B}{S}
+                     \mid \\
+                    & & & {\color{blue} \putn{E} }
+                     \mid {\color{blue} x \asn \getn }
+      \end{array}
+    \]
+  }
+
+  \only<7-9> {
+    \begin{block}{라벨이 있는 전이 시스템 (labeled transition system)}
+      상태들의 집합 \(S\), 라벨들의 집합 \(L\), 전이 관계 \(\to \ \subseteq S \times L \times S\)
+      \[\def\arraystretch{1.5}
+        \begin{array}{c}
+          p \stackrel{e}{\to} q \qquad \text{where \(p, q \in S\) and \(e \in L\)} \\
+          \text{``상태 \(p\)에서 이벤트 \(e\)를 발생시키며 상태 \(q\)로 전이할 수 있다''}
+        \end{array}
+      \]
+
+      \onslide<8->
+      \[ \pow(S \times L \times S) \]
+      \[ S = (\Stmt \uplus \{\cdot\}) \times \Mem \]
+      \[ L = \{ \putn{n} \mid n \in \mathbb{Z} \} \cup \{ \getn \ n \mid n \in \mathbb{Z} \} \]
+
+      \onslide<9->
+      이벤트는 프로그램과 외부세계의 상호작용을 표현한다.
+      외부에서 관측 되는것이 이벤트 뿐이라면, 상태를 배제하고 이벤트만으로 프로그램의 의미를 정의할 수 있지 않을까?
+    \end{block}
+  }
+\end{frame}
+
+\begin{frame}{Imp의 의미 - 트레이스, 행동}
+  \begin{block}{트레이스 (trace)}
+    프로그램의 한 실행에서 발생한 관측 가능한 이벤트들의 시퀸스. \\
+    프로그램의 행동 \(\beh\)는 발생 가능한 모든 트레이스들의 집합.
+    \[ \beh : \Stmt \to \pow(\Trace(L)) \]
+
+    \pause
+    \(\Trace\)는 종료하지 않는 프로그램의 트레이스를 표현할 수 있도록 주의 깊게 정의 되어야 한다.
+    CompCert에서는 프로그램의 트레이스를 다음과 같이 4가지로 분류한다.
+    { \footnotesize
+      \begin{itemize}
+        \item Termination, 유한개의 관측 가능한 이벤트를 발생시킨 후 종료한 경우.
+        \item Divergence, 유한개의 관측 가능한 이벤트를 발생시킨 후 무한히 실행되며 종료하지 않는 경우.
+        \item Reactive divergence, 무한개의 관측 가능한 이벤트를 지속적으로 발생시키는 경우.
+        \item Going wrong, 유한개의 관측 가능한 이벤트를 발생시킨 후 비정상적으로 종료한 경우.
+      \end{itemize}
+    }
+  \end{block}
+\end{frame}
+
+% \begin{frame}{프로그램의 스펙}
+%   \only<1-> {
+%     \begin{block}{호어 트리플}
+%       \(\hoare{P}{C}{Q}\) \ : 선행조건 \(P\)를 만족하는 상태에서 프로그램 \(C\)를 실행하여 \textbf{종료한 경우}, 종료한 후의 상태는 항상 후행조건 \(Q\)를 만족한다.
+%     \end{block}
+%   }
+% \end{frame}
 
 \end{document}
