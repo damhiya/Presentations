@@ -140,7 +140,8 @@
         \Stmt & S & ::= & \skp
                      \mid x \asn E
                      \mid S_1 ; S_2
-                     \mid \ifte{B}{S_1}{S_2}
+                     \mid \\
+                    & & & \ifte{B}{S_1}{S_2}
                      \mid \while{B}{S}
       \end{array}
     \]
@@ -313,9 +314,9 @@
                      \mid x \asn E
                      \mid S_1 ; S_2
                      \mid \ifte{B}{S_1}{S_2}
-                     \mid \while{B}{S}
                      \mid \\
-                    & & & {\color{blue} \putn{E} }
+                    & & & \while{B}{S}
+                     \mid {\color{blue} \putn{E} }
                      \mid {\color{blue} x \asn \getn }
       \end{array}
     \]
