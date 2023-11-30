@@ -156,12 +156,12 @@
     \hat t_1(\beta) & \text{if} \ \alpha = 1\beta \\
     \end{cases}
   $$
-  $$ f(X) = \{\nil\} \cup \{\bin(t_0,t_1) \mid t_0, t_1 \in X\} $$
+  $$ f(X) = \{\nil\} \cup \{\bin(\hat t_0,\hat t_1) \mid \hat t_0, \hat t_1 \in X\} $$
 \end{frame}
 
 \begin{frame}{Inductively defined set}
   $f$ is an order-preserving function.
-  $$ f(X) = \{\nil\} \cup \{\bin(t_0,t_1) \mid t_0, t_1 \in X\} $$
+  $$ f(X) = \{\nil\} \cup \{\bin(\hat t_0, \hat t_1) \mid \hat t_0, \hat t_1 \in X\} $$
 
   By using Knaster-Tarski theorem, we can define the set of binary trees with following properties
   as the least fixpoint of $f$.
@@ -223,7 +223,7 @@
 \begin{frame}{Coinductively defined set and relation}
   The greatest fixpoint of $f$ is a set of non-wellfounded trees.
 
-  $$ f(X) = \{\nil\} \cup \{\bin(t_0,t_1) \mid t_0, t_1 \in X\} $$
+  $$ f(X) = \{\nil\} \cup \{\bin(\hat t_0, \hat t_1) \mid \hat t_0, \hat t_1 \in X\} $$
   $$ \CoTree = \cofix(f) $$
   $$ \CoTree = f(\Tree) $$
   $$ X \subseteq f(X) \Rightarrow X \subseteq \CoTree $$
