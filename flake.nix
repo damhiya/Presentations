@@ -12,6 +12,7 @@
           nativeBuildInputs = with pkgs; [
             gnumake
             texlive.combined.scheme-full
+            python3Packages.pygments
           ];
         };
       in { devShell = shell; });
