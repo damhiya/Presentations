@@ -1,9 +1,18 @@
 \documentclass[9pt]{beamer}
 \usefonttheme[onlymath]{serif}
 
-\usepackage{kotex}
-% \usepackage{csquotes, qtree, tikz-cd, proof}
-\usepackage{amsthm}
+\usepackage{kotex, MnSymbol, amsthm, proof}
+
+\newcommand\pow[1]{\mathcal{P}(#1)}
+\newcommand\two[0]{\mathbf{2}}
+\newcommand\Tree[0]{\text{Tree}}
+\newcommand\CoTree[0]{\text{CoTree}}
+\newcommand\nil[0]{\text{nil}}
+\newcommand\bin[0]{\text{bin}}
+\newcommand\lchild[1]{\text{left}(#1)}
+\newcommand\rchild[1]{\text{right}(#1)}
+\newcommand\fix[0]{\boldsymbol{\mu}}
+\newcommand\cofix[0]{\boldsymbol{\nu}}
 
 \newtheorem{remark}{Remark}
 
@@ -43,48 +52,52 @@
     and $\beta \sqsubseteq u$ for every upperbound $u$ of $A$.
   \end{definition}
 
-  Bottom and top elements, as well as infimum and supremum, are unique if they exists.
+  Bottom and top elements, as well as infimum and supremum, are unique if they exist.
 \end{frame}
 
 \begin{frame}
   \begin{definition}[Complete lattice]
     A poset $(L, \sqsubseteq)$ is a complete lattice if
     every subset of $L$ has an infimum and a supremum.
-    We write $\bigwedge A$ and $\bigvee A$ for the infimum and the supremum of $A$
+    We write $\bigsqcap A$ and $\bigsqcup A$ for the infimum and the supremum of $A$, respectively.
   \end{definition}
+
+  \begin{example}[Power set lattice]
+    Given a set $A$, $(\pow{A}, \subseteq)$ forms a complete lattice.
+  \end{example}
 
   \begin{lemma}
     Complete lattice has the bottom and the top element, and they can be represented as follows.
     $$
       \begin{aligned}
-        \bot = \bigwedge L         = \bigvee \emptyset \\
-        \top = \bigwedge \emptyset = \bigvee L
+        \bot = \bigsqcap L         = \bigsqcup \emptyset \\
+        \top = \bigsqcap \emptyset = \bigsqcup L
       \end{aligned}
     $$
   \end{lemma}
 
   \begin{remark}
     Existence of supremum is enough for a poset to be a complete lattice.
-    Let $(L, \sqsubseteq)$ be a poset whose subsets has a supremum, and $A$ be a subset of $L$.
-    Define $D = \{l \mid l \ \text{is a lower bound of} \ A \}$ and $\alpha = \bigvee D$.
+    Let $(L, \sqsubseteq)$ be a poset where every subset of $L$ has a supremum, and let $A$ be a subset of $L$.
+    Define $D = \{l \mid l \ \text{is a lower bound of} \ A \}$ and $\alpha = \bigsqcup D$.
     Then $\alpha$ is the infimum of $A$.
   \end{remark}
+\end{frame}
 
+\begin{frame}
   \begin{definition}[Fixed point]
     Let $(L,\sqsubseteq)$ be a complete lattice, and $f : L \to L$.
     Then $x \in L$ is said to be a fixed point, prefixed point, or postfixed point when
     it satisfies $x = f(x)$, $f(x) \sqsubseteq x$, $x \sqsubseteq f(x)$, respectively.
   \end{definition}
-\end{frame}
 
-\begin{frame}
   \begin{lemma}
     Let $(L,\sqsubseteq)$ be a complete lattice, and $f : L \to L$ be an order-preserving function.
-    Then $f$ has the least fixpoint $\mu = \bigwedge \{x \in L \mid f(x) \sqsubseteq x\}$
-    and the greatest fixpoint $\nu = \bigvee \{x \in L \mid x \sqsubseteq f(x)\}$.
+    Then $f$ has the least fixpoint $\mu = \bigsqcap \{x \in L \mid f(x) \sqsubseteq x\}$
+    and the greatest fixpoint $\nu = \bigsqcup \{x \in L \mid x \sqsubseteq f(x)\}$.
   \end{lemma}
   \begin{proof}
-    Let $D = \{x \in L \mid x \sqsubseteq f(x)\}$ and $\nu = \bigvee D$.
+    Let $D = \{x \in L \mid x \sqsubseteq f(x)\}$ and $\nu = \bigsqcup D$.
     Let $x \in D$.
     Then $x \sqsubseteq f(x)$ and $x \sqsubseteq \nu$, from which we know $x \sqsubseteq f(x) \sqsubseteq f(\nu)$ by monotonicity of $f$.
     Since $x$ is arbitrary, $f(\nu)$ is an upper bound of $D$, and thus $\nu \sqsubseteq f(\nu)$.
@@ -103,12 +116,111 @@
     Let $W$ be a subset of $P$.
     Define $D$ as the set of upper bounds of $W$, and suppose $x \in D$, $w \in W$.
     Then $w \sqsubseteq x$ and $w = f(w) \sqsubseteq f(x)$, by monotonicity of $f$.
-    Since $w$ is arbitrary, $f(x) \in D$, and thus $f(D) \subseteq D$.
+    Since $w$ is arbitrary, $f(x) \in D$ for all $x \in D$, and thus $f(D) \subseteq D$.
 
     Consider a restriction of $f$ from $D$ to $D$.
     Then $f$ has the least fixpoint in $D$. Call it $\alpha$.
     Then it is evident that $\alpha$ is the supremum of $W$ in $P$.
   \end{proof}
 \end{frame}
+
+\begin{frame}
+  \begin{figure}
+  \[
+    \infer
+    {\nil \in \Tree}
+    { }
+    \quad
+    \infer
+    {\bin(t_0,t_1) \in \Tree}
+    {t_0 \in \Tree & t_1 \in \Tree}
+  \]
+  \caption{An inductive definition of binary tree}
+  \end{figure}
+
+  \pause
+  Consider the power set lattice $(\pow{T}, \subseteq)$ where
+  $$\alpha \in \two^* = \{\varepsilon, 0, 1, 00, 01, 10, 11, ...\}$$
+  $$\hat t \in T = \two^{\two^*}$$
+
+  Define $f : \pow{T} \to \pow{T}$ as follows.
+  $$ \nil(\alpha) = 0 $$
+  % $$\nil(\alpha) = \begin{cases}
+  %     1 & \text{if} \ \alpha = \varepsilon \\
+  %     0 & \text{otherwise}
+  %   \end{cases}
+  % $$
+  $$\bin(\hat t_0, \hat t_1)(\alpha) = \begin{cases}
+    1               & \text{if} \ \alpha = \varepsilon \\
+    \hat t_0(\beta) & \text{if} \ \alpha = 0\beta \\
+    \hat t_1(\beta) & \text{if} \ \alpha = 1\beta \\
+    \end{cases}
+  $$
+  $$ f(X) = \{\nil\} \cup \{\bin(t_0,t_1) \mid t_0, t_1 \in X\} $$
+\end{frame}
+
+\begin{frame}
+  $f$ is an order-preserving function.
+  $$ f(X) = \{\nil\} \cup \{\bin(t_0,t_1) \mid t_0, t_1 \in X\} $$
+
+  By using Knaster-Tarski theorem, we can define the set of binary trees with following properties
+  as the least fixpoint of $f$.
+  $$ \Tree = \fix(f) $$
+  $$ \Tree = f(\Tree) $$
+  $$ f(X) \subseteq X \Rightarrow \Tree \subseteq X $$
+
+\end{frame}
+
+\begin{frame}
+  \begin{figure}
+  \[
+    \infer
+    {\nil \lesssim t}
+    {}
+    \quad
+    \infer
+    {\bin(t_0,t_1) \lesssim \bin(t_0',t_1')}
+    {t_0 \lesssim t_0' & t_1 \lesssim t_1'}
+  \]
+  \caption{Inductive definition of tree relation}
+  \end{figure}
+
+  Consider $(\pow{\Tree \times \Tree}, \subseteq)$.
+  We can define following partial order on $\Tree$.
+  $$ f_\lesssim(R) =
+    \{(\nil,t) \mid t \in \Tree\} \cup
+    \{(\bin(t_0, t_1), \bin(t_0', t_1')) \mid (t_0, t_0') \in R, (t_1, t_1') \in R \}
+  $$
+  $$ (\lesssim) = \fix(f_\lesssim) $$
+  $$ (\lesssim) = f_\lesssim(\lesssim) $$
+  $$ f_\lesssim(R) \subseteq R \Rightarrow (\lesssim) \subseteq R $$
+\end{frame}
+
+\begin{frame}
+  The following proof is an example of inductive proof using Tarski's principle.
+  \begin{example}[Reflexivity of $\lesssim$]
+    Let $X = \{t \mid t \lesssim t\}$. We have to show $\Tree \subseteq X$.
+    By using Tarski's principle, it is enough to show $f(X) \subseteq X$.
+    Let $t \in f(X)$. By unfolding the definition of $f$ and $X$,
+    we have to show $(t,t) \in (\lesssim)$ whenever
+    $$ t \in \{\nil\} \cup \{\bin(t_0, t_1) \mid t_0 \lesssim t_0, t_1 \lesssim t_1\} $$
+
+    (i) When $t = \nil$,
+        $$ (\nil, \nil) \in (\lesssim) = f_\lesssim(\lesssim) = 
+           \{(\nil,t) \mid t \in \Tree\} \cup \{ \ldots \}
+        $$
+
+    (ii) When $t = \bin(t_0, t_1)$ for some $t_0, t_1$ s.t. $t_0 \lesssim t_0$ and $t_1 \lesssim t_1$,
+        $$
+          \begin{aligned}
+            (\bin(t_0, t_1), & \bin(t_0, t_1)) \in (\lesssim) = f_\lesssim(\lesssim) = \\
+            & \{(\nil,t) \mid t \in \Tree\} \cup
+              \{(\bin(t_0, t_1), \bin(t_0', t_1')) \mid t_0 \lesssim t_0', t_1 \lesssim t_1' \}
+          \end{aligned}
+        $$
+
+  \end{example}
+\end{frame}
+
 
 \end{document}
