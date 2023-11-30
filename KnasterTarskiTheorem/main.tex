@@ -25,7 +25,7 @@
   \titlepage
 \end{frame}
 
-\begin{frame}
+\begin{frame}{Basic definitions}
   \begin{definition}[Bottom and top element]
     A bottom (top) element of a poset is an element less (greater) than or equal to any elements in the poset.
     We write $\bot$ and $\top$ for a bottom element and a top element, respectively.
@@ -55,7 +55,7 @@
   Bottom and top elements, as well as infimum and supremum, are unique if they exist.
 \end{frame}
 
-\begin{frame}
+\begin{frame}{Basic definitions}
   \begin{definition}[Complete lattice]
     A poset $(L, \sqsubseteq)$ is a complete lattice if
     every subset of $L$ has an infimum and a supremum.
@@ -84,7 +84,7 @@
   \end{remark}
 \end{frame}
 
-\begin{frame}
+\begin{frame}{Knaster-Tarski theorem}
   \begin{definition}[Fixed point]
     Let $(L,\sqsubseteq)$ be a complete lattice, and $f : L \to L$.
     Then $x \in L$ is said to be a fixed point, prefixed point, or postfixed point when
@@ -108,7 +108,7 @@
   \end{proof}
 \end{frame}
 
-\begin{frame}
+\begin{frame}{Knaster-Tarski theorem}
   \begin{theorem}[Knaster-Tarski]
     Let $(L,\sqsubseteq)$ be a complete lattice, and $f : L \to L$ be an order-preserving function. Let $P \subseteq L$ be the set of fixpoints of $f$. Then $(P, \sqsubseteq)$ forms a complete lattice.
   \end{theorem}
@@ -124,7 +124,7 @@
   \end{proof}
 \end{frame}
 
-\begin{frame}
+\begin{frame}{Inductively defined set}
   \begin{figure}
   \[
     \infer
@@ -159,7 +159,7 @@
   $$ f(X) = \{\nil\} \cup \{\bin(t_0,t_1) \mid t_0, t_1 \in X\} $$
 \end{frame}
 
-\begin{frame}
+\begin{frame}{Inductively defined set}
   $f$ is an order-preserving function.
   $$ f(X) = \{\nil\} \cup \{\bin(t_0,t_1) \mid t_0, t_1 \in X\} $$
 
@@ -168,59 +168,108 @@
   $$ \Tree = \fix(f) $$
   $$ \Tree = f(\Tree) $$
   $$ f(X) \subseteq X \Rightarrow \Tree \subseteq X $$
-
 \end{frame}
 
-\begin{frame}
+\begin{frame}{Inductively defined relation}
   \begin{figure}
   \[
     \infer
-    {\nil \lesssim t}
+    {\nil \lesssim_{\Tree} t}
     {}
     \quad
     \infer
-    {\bin(t_0,t_1) \lesssim \bin(t_0',t_1')}
-    {t_0 \lesssim t_0' & t_1 \lesssim t_1'}
+    {\bin(t_0,t_1) \lesssim_{\Tree} \bin(t_0',t_1')}
+    {t_0 \lesssim_{\Tree} t_0' & t_1 \lesssim_{\Tree} t_1'}
   \]
   \caption{Inductive definition of tree relation}
   \end{figure}
 
   Consider $(\pow{\Tree \times \Tree}, \subseteq)$.
   We can define following partial order on $\Tree$.
-  $$ f_\lesssim(R) =
+  $$ g_{\Tree}(R) =
     \{(\nil,t) \mid t \in \Tree\} \cup
     \{(\bin(t_0, t_1), \bin(t_0', t_1')) \mid (t_0, t_0') \in R, (t_1, t_1') \in R \}
   $$
-  $$ (\lesssim) = \fix(f_\lesssim) $$
-  $$ (\lesssim) = f_\lesssim(\lesssim) $$
-  $$ f_\lesssim(R) \subseteq R \Rightarrow (\lesssim) \subseteq R $$
+  $$ (\lesssim_{\Tree}) = \fix(g_{\Tree}) $$
+  $$ (\lesssim_{\Tree}) = g_{\Tree}(\lesssim_{\Tree}) $$
+  $$ g_{\Tree}(R) \subseteq R \Rightarrow (\lesssim_{\Tree}) \subseteq R $$
 \end{frame}
 
-\begin{frame}
+\begin{frame}{Inductive proof}
   The following proof is an example of inductive proof using Tarski's principle.
-  \begin{example}[Reflexivity of $\lesssim$]
-    Let $X = \{t \mid t \lesssim t\}$. We have to show $\Tree \subseteq X$.
+  \begin{example}[Reflexivity of $\lesssim_{\Tree}$]
+    Let $X = \{t \mid t \lesssim_{\Tree} t\}$. We have to show that $\Tree \subseteq X$.
     By using Tarski's principle, it is enough to show $f(X) \subseteq X$.
     Let $t \in f(X)$. By unfolding the definition of $f$ and $X$,
-    we have to show $(t,t) \in (\lesssim)$ whenever
-    $$ t \in \{\nil\} \cup \{\bin(t_0, t_1) \mid t_0 \lesssim t_0, t_1 \lesssim t_1\} $$
+    we have to show $(t,t) \in (\lesssim_{\Tree})$ whenever
+    $$ t \in \{\nil\} \cup \{\bin(t_0, t_1) \mid t_0 \lesssim_{\Tree} t_0, t_1 \lesssim_{\Tree} t_1\} $$
 
     (i) When $t = \nil$,
-        $$ (\nil, \nil) \in (\lesssim) = f_\lesssim(\lesssim) = 
+        $$ (\nil, \nil) \in (\lesssim_{\Tree}) = g_{\Tree}(\lesssim_{\Tree}) = 
            \{(\nil,t) \mid t \in \Tree\} \cup \{ \ldots \}
         $$
 
-    (ii) When $t = \bin(t_0, t_1)$ for some $t_0, t_1$ s.t. $t_0 \lesssim t_0$ and $t_1 \lesssim t_1$,
+    (ii) When $t = \bin(t_0, t_1)$ for some $t_0, t_1$ s.t. $t_0 \lesssim_{\Tree} t_0$ and $t_1 \lesssim_{\Tree} t_1$,
         $$
           \begin{aligned}
-            (\bin(t_0, t_1), & \bin(t_0, t_1)) \in (\lesssim) = f_\lesssim(\lesssim) = \\
+            (\bin(t_0, t_1), & \bin(t_0, t_1)) \in (\lesssim_{\Tree}) = g_{\Tree}(\lesssim_{\Tree}) = \\
             & \{(\nil,t) \mid t \in \Tree\} \cup
-              \{(\bin(t_0, t_1), \bin(t_0', t_1')) \mid t_0 \lesssim t_0', t_1 \lesssim t_1' \}
+              \{(\bin(t_0, t_1), \bin(t_0', t_1')) \mid t_0 \lesssim_{\Tree} t_0', t_1 \lesssim_{\Tree} t_1' \}
           \end{aligned}
         $$
-
   \end{example}
 \end{frame}
 
+\begin{frame}{Coinductively defined set and relation}
+  The greatest fixpoint of $f$ is a set of non-wellfounded trees.
+
+  $$ f(X) = \{\nil\} \cup \{\bin(t_0,t_1) \mid t_0, t_1 \in X\} $$
+  $$ \CoTree = \cofix(f) $$
+  $$ \CoTree = f(\Tree) $$
+  $$ X \subseteq f(X) \Rightarrow X \subseteq \CoTree $$
+
+  Define a partial order of $\CoTree$.
+  $$ g_{\CoTree}(R) =
+    \{(\nil,t) \mid t \in \CoTree\} \cup
+    \{(\bin(t_0, t_1), \bin(t_0', t_1')) \mid (t_0, t_0') \in R, (t_1, t_1') \in R \}
+  $$
+  $$ (\lesssim_{\CoTree}) = \cofix(g_{\CoTree}) $$
+  $$ (\lesssim_{\CoTree}) = g_{\CoTree}(\lesssim_{\CoTree}) $$
+  $$ R \subseteq g_{\CoTree}(R) \Rightarrow R \subseteq (\lesssim_{\CoTree}) $$
+\end{frame}
+
+\begin{frame}{Coinductive proof}
+  \begin{example}[Transitivity of $\lesssim_{\CoTree}$]
+    Let $R = \{(t, t'') \mid \exists t', t \lesssim_\CoTree t', t' \lesssim_\CoTree t''\}$.
+    We will show that $R \subseteq (\lesssim_\CoTree)$.
+    By using Tarski's principle, it is enough to show $R \subseteq g_\CoTree(R)$.
+    Let $(t, t'') \in R$. Then there is $t'$ s.t. $t \lesssim_\CoTree t'$ and $t' \lesssim_\CoTree t''$.
+    By unfolding the definition of $g_\CoTree$,
+    we have to show
+    $$ (t, t'') \in
+       \{(\nil,t) \mid t \in \CoTree\} \cup
+       \{(\bin(t_0, t_1), \bin(t_0', t_1')) \mid (t_0, t_0') \in R, (t_1, t_1') \in R \}
+    $$
+
+    By using $(\lesssim_\CoTree) = g_\CoTree(\lesssim_\CoTree)$, we know that
+    $$
+      \begin{aligned}
+        (t,t'), (t', t'')
+        & \in \{(\nil,t) \mid t \in \CoTree\} \\
+        & \cup \{(\bin(t_0, t_1), \bin(t_0', t_1')) \mid t_0 \lesssim_\CoTree t_0', t_1 \lesssim_\CoTree t_1' \}
+      \end{aligned}
+    $$
+    Then there are two possible cases.
+
+    (i) When $t = \nil$,
+        $$(\nil, t'') \in \{(\nil,t) \mid t \in \CoTree\}$$
+
+    (ii) When $t = \bin(t_0, t_1)$, $t' = \bin(t_0', t_1')$, and $t'' = \bin(t_0'', t_1'')$ for some $t_0, t_1, t_0', t_1', t_0'', t_1''$ s.t.
+          $t_0 \lesssim_\CoTree t_0'$, $t_1 \lesssim_\CoTree t_1'$, and $t_0'' \lesssim_\CoTree t_1''$,
+        $$ (\bin(t_0, t_1), \bin(t_0'', t_1'')) \in
+           \{(\bin(t_0, t_1), \bin(t_0', t_1')) \mid (t_0, t_0') \in R, (t_1, t_1') \in R \}
+        $$
+  \end{example}
+\end{frame}
 
 \end{document}
