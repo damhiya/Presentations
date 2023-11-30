@@ -1,0 +1,114 @@
+\documentclass[9pt]{beamer}
+\usefonttheme[onlymath]{serif}
+
+\usepackage{kotex}
+% \usepackage{csquotes, qtree, tikz-cd, proof}
+\usepackage{amsthm}
+
+\newtheorem{remark}{Remark}
+
+\title{Knaster-Tarski theorem}
+\author{문순원}
+
+\begin{document}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\begin{frame}
+  \begin{definition}[Bottom and top element]
+    A bottom (top) element of a poset is an element less (greater) than or equal to any elements in the poset.
+    We write $\bot$ and $\top$ for a bottom element and a top element, respectively.
+    $$
+    \forall x \in L, \bot \sqsubseteq x
+    $$
+    $$
+    \forall x \in L, x \sqsubseteq \top
+    $$
+  \end{definition}
+
+  % \begin{definition}[Interval]
+  %   A closed interval of a poset $(L,\sqsubseteq)$ is defined as follows.
+  %   $$
+  %     [a,b] = \{ x \in L \mid a \sqsubseteq x \sqsubseteq b \}
+  %   $$
+  % \end{definition}
+
+  \begin{definition}[Infimum and supremum]
+    Let $(L,\sqsubseteq)$ be a poset and $A$ be a subset of $L$.
+    Then $\alpha$ is an infimum (meet) of $A$ if $\alpha$ is a lower bound of $A$
+    and $l \sqsubseteq \alpha$ for every lower bound $l$ of $A$.
+    Similary, $\beta$ is a supremum (join) of $A$ if $\beta$ is an upper bound of $A$
+    and $\beta \sqsubseteq u$ for every upperbound $u$ of $A$.
+  \end{definition}
+
+  Bottom and top elements, as well as infimum and supremum, are unique if they exists.
+\end{frame}
+
+\begin{frame}
+  \begin{definition}[Complete lattice]
+    A poset $(L, \sqsubseteq)$ is a complete lattice if
+    every subset of $L$ has an infimum and a supremum.
+    We write $\bigwedge A$ and $\bigvee A$ for the infimum and the supremum of $A$
+  \end{definition}
+
+  \begin{lemma}
+    Complete lattice has the bottom and the top element, and they can be represented as follows.
+    $$
+      \begin{aligned}
+        \bot = \bigwedge L         = \bigvee \emptyset \\
+        \top = \bigwedge \emptyset = \bigvee L
+      \end{aligned}
+    $$
+  \end{lemma}
+
+  \begin{remark}
+    Existence of supremum is enough for a poset to be a complete lattice.
+    Let $(L, \sqsubseteq)$ be a poset whose subsets has a supremum, and $A$ be a subset of $L$.
+    Define $D = \{l \mid l \ \text{is a lower bound of} \ A \}$ and $\alpha = \bigvee D$.
+    Then $\alpha$ is the infimum of $A$.
+  \end{remark}
+
+  \begin{definition}[Fixed point]
+    Let $(L,\sqsubseteq)$ be a complete lattice, and $f : L \to L$.
+    Then $x \in L$ is said to be a fixed point, prefixed point, or postfixed point when
+    it satisfies $x = f(x)$, $f(x) \sqsubseteq x$, $x \sqsubseteq f(x)$, respectively.
+  \end{definition}
+\end{frame}
+
+\begin{frame}
+  \begin{lemma}
+    Let $(L,\sqsubseteq)$ be a complete lattice, and $f : L \to L$ be an order-preserving function.
+    Then $f$ has the least fixpoint $\mu = \bigwedge \{x \in L \mid f(x) \sqsubseteq x\}$
+    and the greatest fixpoint $\nu = \bigvee \{x \in L \mid x \sqsubseteq f(x)\}$.
+  \end{lemma}
+  \begin{proof}
+    Let $D = \{x \in L \mid x \sqsubseteq f(x)\}$ and $\nu = \bigvee D$.
+    Let $x \in D$.
+    Then $x \sqsubseteq f(x)$ and $x \sqsubseteq \nu$, from which we know $x \sqsubseteq f(x) \sqsubseteq f(\nu)$ by monotonicity of $f$.
+    Since $x$ is arbitrary, $f(\nu)$ is an upper bound of $D$, and thus $\nu \sqsubseteq f(\nu)$.
+    Again, by monotonicity of $f$, $f(\nu) \sqsubseteq f(f(\nu))$.
+    But then $f(\nu) \in D$ and thus $f(\nu) \sqsubseteq \nu$.
+    Then $\nu = f(\nu)$ by the antisymmetry of $\sqsubseteq$.
+    The same argument can be used to show that $\mu$ is the least fixpoint.
+  \end{proof}
+\end{frame}
+
+\begin{frame}
+  \begin{theorem}[Knaster-Tarski]
+    Let $(L,\sqsubseteq)$ be a complete lattice, and $f : L \to L$ be an order-preserving function. Let $P \subseteq L$ be the set of fixpoints of $f$. Then $(P, \sqsubseteq)$ forms a complete lattice.
+  \end{theorem}
+  \begin{proof}
+    Let $W$ be a subset of $P$.
+    Define $D$ as the set of upper bounds of $W$, and suppose $x \in D$, $w \in W$.
+    Then $w \sqsubseteq x$ and $w = f(w) \sqsubseteq f(x)$, by monotonicity of $f$.
+    Since $w$ is arbitrary, $f(x) \in D$, and thus $f(D) \subseteq D$.
+
+    Consider a restriction of $f$ from $D$ to $D$.
+    Then $f$ has the least fixpoint in $D$. Call it $\alpha$.
+    Then it is evident that $\alpha$ is the supremum of $W$ in $P$.
+  \end{proof}
+\end{frame}
+
+\end{document}
