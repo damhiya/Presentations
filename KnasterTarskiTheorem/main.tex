@@ -14,15 +14,19 @@
 \newcommand\fix[0]{\boldsymbol{\mu}}
 \newcommand\cofix[0]{\boldsymbol{\nu}}
 
-\newtheorem{remark}{Remark}
-
-\title{Knaster-Tarski theorem}
+\title{The Knaster-Tarski theorem}
 \author{문순원}
 
 \begin{document}
 
 \begin{frame}
   \titlepage
+\end{frame}
+
+\begin{frame}{The statement}
+  \begin{theorem}[Knaster-Tarski]
+    Let $(L,\sqsubseteq)$ be a complete lattice, and $f : L \to L$ be an order-preserving function. Let $P \subseteq L$ be the set of fixpoints of $f$. Then $(P, \sqsubseteq)$ forms a complete lattice.
+  \end{theorem}
 \end{frame}
 
 \begin{frame}{Basic definitions}
@@ -65,7 +69,9 @@
   \begin{example}[Power set lattice]
     Given a set $A$, $(\pow{A}, \subseteq)$ forms a complete lattice.
   \end{example}
+\end{frame}
 
+\begin{frame}{Basic definitions}
   \begin{lemma}
     Complete lattice has the bottom and the top element, and they can be represented as follows.
     $$
@@ -76,21 +82,25 @@
     $$
   \end{lemma}
 
-  \begin{remark}
-    Existence of supremum is enough for a poset to be a complete lattice.
-    Let $(L, \sqsubseteq)$ be a poset where every subset of $L$ has a supremum, and let $A$ be a subset of $L$.
-    Define $D = \{l \mid l \ \text{is a lower bound of} \ A \}$ and $\alpha = \bigsqcup D$.
+  \begin{lemma}
+    Let $(L,\sqsubseteq)$ be a poset where every subset of $L$ has a supremum. Then $L$ is a complete lattice.
+  \end{lemma}
+  \begin{proof}
+    Let $A$ be a subset of $L$.
+    Define $D$ as the set of lower bounds of $A$, and $\alpha = \bigsqcup D$.
     Then $\alpha$ is the infimum of $A$.
-  \end{remark}
+  \end{proof}
+\end{frame}
+
+\begin{frame}{Basic definitions}
+  \begin{definition}[Fixed point]
+    Let $(L,\sqsubseteq)$ be a complete lattice, and $f : L \to L$.
+    Then $x \in L$ is said to be a fixed point, prefixed point, or postfixed point of $f$ when
+    it satisfies $x = f(x)$, $f(x) \sqsubseteq x$, $x \sqsubseteq f(x)$, respectively.
+  \end{definition}
 \end{frame}
 
 \begin{frame}{Knaster-Tarski theorem}
-  \begin{definition}[Fixed point]
-    Let $(L,\sqsubseteq)$ be a complete lattice, and $f : L \to L$.
-    Then $x \in L$ is said to be a fixed point, prefixed point, or postfixed point when
-    it satisfies $x = f(x)$, $f(x) \sqsubseteq x$, $x \sqsubseteq f(x)$, respectively.
-  \end{definition}
-
   \begin{lemma}
     Let $(L,\sqsubseteq)$ be a complete lattice, and $f : L \to L$ be an order-preserving function.
     Then $f$ has the least fixpoint $\mu = \bigsqcap \{x \in L \mid f(x) \sqsubseteq x\}$
@@ -114,9 +124,13 @@
   \end{theorem}
   \begin{proof}
     Let $W$ be a subset of $P$.
-    Define $D$ as the set of upper bounds of $W$, and suppose $x \in D$, $w \in W$.
+    Define $D$ as the set of upper bounds of $W$.
+    Then $D$ is a complete sublattice of $L$ with the bottom element $\bigsqcup W$ and
+    a supremum $\bigsqcup W \sqcup \bigsqcup A$ for all $A \subseteq D$.
+
+    Suppose $x \in D$, $w \in W$.
     Then $w \sqsubseteq x$ and $w = f(w) \sqsubseteq f(x)$, by monotonicity of $f$.
-    Since $w$ is arbitrary, $f(x) \in D$ for all $x \in D$, and thus $f(D) \subseteq D$.
+    Since $w$ and $x$ are arbitrary, $f(x) \in D$ for all $x \in D$, and thus $f(D) \subseteq D$.
 
     Consider a restriction of $f$ from $D$ to $D$.
     Then $f$ has the least fixpoint in $D$. Call it $\alpha$.
@@ -163,11 +177,11 @@
   $f$ is an order-preserving function.
   $$ f(X) = \{\nil\} \cup \{\bin(\hat t_0, \hat t_1) \mid \hat t_0, \hat t_1 \in X\} $$
 
-  By using Knaster-Tarski theorem, we can define the set of binary trees with following properties
+  By using the Knaster-Tarski theorem, we can define the set of binary trees with following properties
   as the least fixpoint of $f$.
   $$ \Tree = \fix(f) $$
   $$ \Tree = f(\Tree) $$
-  $$ f(X) \subseteq X \Rightarrow \Tree \subseteq X $$
+  $$ f(X) \subseteq X \to \Tree \subseteq X $$
 \end{frame}
 
 \begin{frame}{Inductively defined relation}
@@ -192,7 +206,7 @@
   $$
   $$ (\lesssim_{\Tree}) = \fix(g_{\Tree}) $$
   $$ (\lesssim_{\Tree}) = g_{\Tree}(\lesssim_{\Tree}) $$
-  $$ g_{\Tree}(R) \subseteq R \Rightarrow (\lesssim_{\Tree}) \subseteq R $$
+  $$ g_{\Tree}(R) \subseteq R \to (\lesssim_{\Tree}) \subseteq R $$
 \end{frame}
 
 \begin{frame}{Inductive proof}
@@ -226,7 +240,7 @@
   $$ f(X) = \{\nil\} \cup \{\bin(\hat t_0, \hat t_1) \mid \hat t_0, \hat t_1 \in X\} $$
   $$ \CoTree = \cofix(f) $$
   $$ \CoTree = f(\Tree) $$
-  $$ X \subseteq f(X) \Rightarrow X \subseteq \CoTree $$
+  $$ X \subseteq f(X) \to X \subseteq \CoTree $$
 
   Define a partial order of $\CoTree$.
   $$ g_{\CoTree}(R) =
@@ -235,7 +249,7 @@
   $$
   $$ (\lesssim_{\CoTree}) = \cofix(g_{\CoTree}) $$
   $$ (\lesssim_{\CoTree}) = g_{\CoTree}(\lesssim_{\CoTree}) $$
-  $$ R \subseteq g_{\CoTree}(R) \Rightarrow R \subseteq (\lesssim_{\CoTree}) $$
+  $$ R \subseteq g_{\CoTree}(R) \to R \subseteq (\lesssim_{\CoTree}) $$
 \end{frame}
 
 \begin{frame}{Coinductive proof}
