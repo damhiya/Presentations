@@ -1,0 +1,249 @@
+\documentclass{article}
+
+\usepackage{kotex, MnSymbol, amsthm, proof}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+
+\newcommand\pow[1]{\mathcal{P}(#1)}
+\newcommand\two[0]{\mathbf{2}}
+\newcommand\Tree[0]{\text{Tree}}
+\newcommand\CoTree[0]{\text{CoTree}}
+\newcommand\nil[0]{\text{nil}}
+\newcommand\bin[0]{\text{bin}}
+\newcommand\lchild[1]{\text{left}(#1)}
+\newcommand\rchild[1]{\text{right}(#1)}
+\newcommand\fix[0]{\boldsymbol{\mu}}
+\newcommand\cofix[0]{\boldsymbol{\nu}}
+
+\title{The Knaster-Tarski theorem}
+\author{문순원}
+
+\begin{document}
+\maketitle
+
+\section{Basic definitions}
+  \begin{definition}[Bottom and top element]
+    A bottom (top) element of a poset is an element less (greater) than or equal to any elements in the poset.
+    We write $\bot$ and $\top$ for a bottom element and a top element, respectively.
+    $$
+      \begin{aligned}
+        \forall x \in L, \bot \sqsubseteq x \\
+        \forall x \in L, x \sqsubseteq \top
+      \end{aligned}
+    $$
+  \end{definition}
+
+  \begin{definition}[Infimum and supremum]
+    Let $(L,\sqsubseteq)$ be a poset and $A$ be a subset of $L$.
+    Then $\alpha$ is an infimum (meet) of $A$ if $\alpha$ is a lower bound of $A$
+    and $l \sqsubseteq \alpha$ for every lower bound $l$ of $A$.
+    Similary, $\beta$ is a supremum (join) of $A$ if $\beta$ is an upper bound of $A$
+    and $\beta \sqsubseteq u$ for every upperbound $u$ of $A$.
+  \end{definition}
+
+  Bottom and top elements, as well as infimum and supremum, are unique if they exist.
+
+  \begin{definition}[Complete lattice]
+    A poset $(L, \sqsubseteq)$ is a complete lattice if
+    every subset of $L$ has an infimum and a supremum.
+    We write $\bigsqcap A$ and $\bigsqcup A$ for the infimum and the supremum of $A$, respectively.
+  \end{definition}
+
+  \begin{example}[Power set lattice]
+    Given a set $A$, $(\pow{A}, \subseteq)$ forms a complete lattice.
+  \end{example}
+
+  \begin{lemma}
+    Complete lattice has the bottom and the top element, and they can be represented as follows.
+    $$
+      \begin{aligned}
+        \bot = \bigsqcap L         = \bigsqcup \emptyset \\
+        \top = \bigsqcap \emptyset = \bigsqcup L
+      \end{aligned}
+    $$
+  \end{lemma}
+
+  \begin{lemma}
+    Let $(L,\sqsubseteq)$ be a poset where every subset of $L$ has a supremum. Then $L$ is a complete lattice.
+  \end{lemma}
+  \begin{proof}
+    Let $A$ be a subset of $L$.
+    Define $D$ as the set of lower bounds of $A$, and $\alpha = \bigsqcup D$.
+    Then $\alpha$ is the infimum of $A$.
+  \end{proof}
+
+  \begin{definition}[Fixed point]
+    Let $(L,\sqsubseteq)$ be a complete lattice, and $f : L \to L$.
+    Then $x \in L$ is said to be a fixed point, prefixed point, or postfixed point of $f$ when
+    it satisfies $x = f(x)$, $f(x) \sqsubseteq x$, $x \sqsubseteq f(x)$, respectively.
+  \end{definition}
+
+\section{Knaster-Tarski theorem}
+  \begin{lemma}
+    Let $(L,\sqsubseteq)$ be a complete lattice, and $f : L \to L$ be an order-preserving function.
+    Then $f$ has the least fixpoint $\mu = \bigsqcap \{x \in L \mid f(x) \sqsubseteq x\}$
+    and the greatest fixpoint $\nu = \bigsqcup \{x \in L \mid x \sqsubseteq f(x)\}$.
+  \end{lemma}
+  \begin{proof}
+    Let $D = \{x \in L \mid x \sqsubseteq f(x)\}$ and $\nu = \bigsqcup D$.
+    Let $x \in D$.
+    Then $x \sqsubseteq f(x)$ and $x \sqsubseteq \nu$, from which we know $x \sqsubseteq f(x) \sqsubseteq f(\nu)$ by monotonicity of $f$.
+    Since $x$ is arbitrary, $f(\nu)$ is an upper bound of $D$, and thus $\nu \sqsubseteq f(\nu)$.
+    Again, by monotonicity of $f$, $f(\nu) \sqsubseteq f(f(\nu))$.
+    But then $f(\nu) \in D$ and thus $f(\nu) \sqsubseteq \nu$.
+    Then $\nu = f(\nu)$ by the antisymmetry of $\sqsubseteq$.
+    The same argument can be used to show that $\mu$ is the least fixpoint.
+  \end{proof}
+
+  \begin{theorem}[Knaster-Tarski]
+    Let $(L,\sqsubseteq)$ be a complete lattice, and $f : L \to L$ be an order-preserving function. Let $P \subseteq L$ be the set of fixpoints of $f$. Then $(P, \sqsubseteq)$ forms a complete lattice.
+  \end{theorem}
+  \begin{proof}
+    Let $W$ be a subset of $P$.
+    Define $D$ as the set of upper bounds of $W$.
+    Then $D$ is a complete sublattice of $L$ with the bottom element $\bigsqcup W$ and
+    a supremum $\bigsqcup W \sqcup \bigsqcup A$ for all $A \subseteq D$.
+
+    Suppose $x \in D$, $w \in W$.
+    Then $w \sqsubseteq x$ and $w = f(w) \sqsubseteq f(x)$, by monotonicity of $f$.
+    Since $w$ and $x$ are arbitrary, $f(x) \in D$ for all $x \in D$, and thus $f(D) \subseteq D$.
+
+    Consider a restriction of $f$ from $D$ to $D$.
+    Then $f$ has the least fixpoint in $D$. Call it $\alpha$.
+    Then it is evident that $\alpha$ is the supremum of $W$ in $P$.
+  \end{proof}
+
+\section{Inductive definition and proof}
+  \begin{figure}
+  \[
+    \infer
+    {\nil \in \Tree}
+    { }
+    \quad
+    \infer
+    {\bin(t_0,t_1) \in \Tree}
+    {t_0 \in \Tree & t_1 \in \Tree}
+  \]
+  \[
+    \infer
+    {\nil \lesssim_{\Tree} t}
+    {}
+    \quad
+    \infer
+    {\bin(t_0,t_1) \lesssim_{\Tree} \bin(t_0',t_1')}
+    {t_0 \lesssim_{\Tree} t_0' & t_1 \lesssim_{\Tree} t_1'}
+  \]
+  \caption{An inductive definition of binary tree and a relation about it}
+  \end{figure}
+
+  As an example, we will define a set of binary tree and a binary relation on it by using the Knaster-Tarski theorem.
+  Consider the power set lattice $(\pow{T}, \subseteq)$ where
+  $$\alpha \in \two^* = \{\varepsilon, 0, 1, 00, 01, 10, 11, ...\}$$
+  $$\hat t \in T = \two^{\two^*}$$
+
+  Define $f : \pow{T} \to \pow{T}$ as follows.
+  $$ \nil(\alpha) = 0 $$
+  $$\bin(\hat t_0, \hat t_1)(\alpha) = \begin{cases}
+    1               & \text{if} \ \alpha = \varepsilon \\
+    \hat t_0(\beta) & \text{if} \ \alpha = 0\beta \\
+    \hat t_1(\beta) & \text{if} \ \alpha = 1\beta \\
+    \end{cases}
+  $$
+  $$ f(X) = \{\nil\} \cup \{\bin(\hat t_0,\hat t_1) \mid \hat t_0, \hat t_1 \in X\} $$
+
+  Then $f$ is an order-preserving function.
+
+  By using the Knaster-Tarski theorem, we can define the set of binary trees with following properties
+  as the least fixpoint of $f$.
+  $$ \Tree = \fix(f) $$
+  $$ \Tree = f(\Tree) $$
+  $$ f(X) \subseteq X \to \Tree \subseteq X $$
+
+  Consider $(\pow{\Tree \times \Tree}, \subseteq)$.
+  We can inductively define following partial order on $\Tree$.
+  $$ g_{\Tree}(R) =
+    \{(\nil,t) \mid t \in \Tree\} \cup
+    \{(\bin(t_0, t_1), \bin(t_0', t_1')) \mid (t_0, t_0') \in R, (t_1, t_1') \in R \}
+  $$
+  $$ (\lesssim_{\Tree}) = \fix(g_{\Tree}) $$
+  $$ (\lesssim_{\Tree}) = g_{\Tree}(\lesssim_{\Tree}) $$
+  $$ g_{\Tree}(R) \subseteq R \to (\lesssim_{\Tree}) \subseteq R $$
+
+  The following is an example of inductive proof using Tarski's principle.
+  \begin{example}[Reflexivity of $\lesssim_{\Tree}$]
+    Let $X = \{t \mid t \lesssim_{\Tree} t\}$. We have to show that $\Tree \subseteq X$.
+    By using Tarski's principle, it is enough to show $f(X) \subseteq X$.
+    Let $t \in f(X)$. By unfolding the definition of $f$ and $X$,
+    we have to show $(t,t) \in (\lesssim_{\Tree})$ whenever
+    $$ t \in \{\nil\} \cup \{\bin(t_0, t_1) \mid t_0 \lesssim_{\Tree} t_0, t_1 \lesssim_{\Tree} t_1\} $$
+
+    (i) When $t = \nil$,
+        $$ (\nil, \nil) \in (\lesssim_{\Tree}) = g_{\Tree}(\lesssim_{\Tree}) = 
+           \{(\nil,t) \mid t \in \Tree\} \cup \{ \ldots \}
+        $$
+
+    (ii) When $t = \bin(t_0, t_1)$ for some $t_0, t_1$ s.t. $t_0 \lesssim_{\Tree} t_0$ and $t_1 \lesssim_{\Tree} t_1$,
+        $$
+          \begin{aligned}
+            (\bin(t_0, t_1), & \bin(t_0, t_1)) \in (\lesssim_{\Tree}) = g_{\Tree}(\lesssim_{\Tree}) = \\
+            & \{(\nil,t) \mid t \in \Tree\} \cup
+              \{(\bin(t_0, t_1), \bin(t_0', t_1')) \mid t_0 \lesssim_{\Tree} t_0', t_1 \lesssim_{\Tree} t_1' \}
+          \end{aligned}
+        $$
+  \end{example}
+
+\section{Coinductive definition and proof}
+  We defined the set of binary tree as the least fixpoint of some order preserving function $f$.
+  On the other hand, the greatest fixpoint of the same function gives a set of non-wellfounded trees (tree of possibly infinite height).
+
+  $$ f(X) = \{\nil\} \cup \{\bin(\hat t_0, \hat t_1) \mid \hat t_0, \hat t_1 \in X\} $$
+  $$ \CoTree = \cofix(f) $$
+  $$ \CoTree = f(\Tree) $$
+  $$ X \subseteq f(X) \to X \subseteq \CoTree $$
+
+  Also, we can coinductively define a partial order of $\CoTree$.
+  $$ g_{\CoTree}(R) =
+    \{(\nil,t) \mid t \in \CoTree\} \cup
+    \{(\bin(t_0, t_1), \bin(t_0', t_1')) \mid (t_0, t_0') \in R, (t_1, t_1') \in R \}
+  $$
+  $$ (\lesssim_{\CoTree}) = \cofix(g_{\CoTree}) $$
+  $$ (\lesssim_{\CoTree}) = g_{\CoTree}(\lesssim_{\CoTree}) $$
+  $$ R \subseteq g_{\CoTree}(R) \to R \subseteq (\lesssim_{\CoTree}) $$
+
+  The following is an example of coinductive proof.
+  \begin{example}[Transitivity of $\lesssim_{\CoTree}$]
+    Let $R = \{(t, t'') \mid \exists t', t \lesssim_\CoTree t', t' \lesssim_\CoTree t''\}$.
+    We will show that $R \subseteq (\lesssim_\CoTree)$.
+    By using Tarski's principle, it is enough to show $R \subseteq g_\CoTree(R)$.
+    Let $(t, t'') \in R$. Then there is $t'$ s.t. $t \lesssim_\CoTree t'$ and $t' \lesssim_\CoTree t''$.
+    By unfolding the definition of $g_\CoTree$,
+    we have to show
+    $$ (t, t'') \in
+       \{(\nil,t) \mid t \in \CoTree\} \cup
+       \{(\bin(t_0, t_1), \bin(t_0', t_1')) \mid (t_0, t_0') \in R, (t_1, t_1') \in R \}
+    $$
+
+    By using $(\lesssim_\CoTree) = g_\CoTree(\lesssim_\CoTree)$, we know that
+    $$
+      \begin{aligned}
+        (t,t'), (t', t'')
+        & \in \{(\nil,t) \mid t \in \CoTree\} \\
+        & \cup \{(\bin(t_0, t_1), \bin(t_0', t_1')) \mid t_0 \lesssim_\CoTree t_0', t_1 \lesssim_\CoTree t_1' \}
+      \end{aligned}
+    $$
+    Then there are two possible cases.
+
+    (i) When $t = \nil$,
+        $$(\nil, t'') \in \{(\nil,t) \mid t \in \CoTree\}$$
+
+    (ii) When $t = \bin(t_0, t_1)$, $t' = \bin(t_0', t_1')$, and $t'' = \bin(t_0'', t_1'')$ for some $t_0, t_1, t_0', t_1', t_0'', t_1''$ s.t.
+          $t_0 \lesssim_\CoTree t_0'$, $t_1 \lesssim_\CoTree t_1'$, and $t_0'' \lesssim_\CoTree t_1''$,
+        $$ (\bin(t_0, t_1), \bin(t_0'', t_1'')) \in
+           \{(\bin(t_0, t_1), \bin(t_0', t_1')) \mid (t_0, t_0') \in R, (t_1, t_1') \in R \}
+        $$
+  \end{example}
+
+\end{document}
